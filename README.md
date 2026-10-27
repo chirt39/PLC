@@ -24,3 +24,9 @@
 
 - `lessons/control/trolley-auto-animation/index.html`：视频播放页，并链接到网页动画版。
 - 页面只收录成品 MP4、网页动画所需的 HTML/CSS/JS 和封面；未收录渲染调试脚本、临时截图及重复源模型。
+
+## 水位数据链 3D 教学动画
+
+- `lessons/control/water-level-3d-animation/index.html`：视频播放页，附网页动画版与字幕下载。
+- 只收录成品 MP4、动画页面依赖文件、封面和字幕；略去分镜、渲染脚本、模型原件及多余关键帧。
+

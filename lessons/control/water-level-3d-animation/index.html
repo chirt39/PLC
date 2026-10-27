@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="水位数据链3D教学动画：4–20 mA变送器、PLC模拟量换算、回差控制、泵阀联动与液位报警。">
+  <title>水位数据链 · 3D教学动画</title>
+  <style>
+    :root{font-family:"Microsoft YaHei","PingFang SC",sans-serif;color:#17212b;background:#f2f5f9;font-synthesis:none;text-rendering:optimizeLegibility}*{box-sizing:border-box}body{margin:0}.top{padding:18px max(24px,calc((100vw - 1180px)/2));background:#fff;border-bottom:1px solid #e2e8f0}.top a{color:#2354a6;text-decoration:none;font-weight:700}.wrap{max-width:1180px;margin:32px auto;padding:0 24px}.eyebrow{font-size:14px;color:#52708d;letter-spacing:.08em}h1{margin:8px 0 10px;font-size:clamp(26px,4vw,40px)}.lead{color:#526173;line-height:1.8;margin:0 0 22px}.player{overflow:hidden;border-radius:16px;background:#111827;box-shadow:0 16px 40px #17212b1c}.player video{display:block;width:100%;max-height:72vh;background:#111827}.actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:18px}.button{display:inline-flex;align-items:center;justify-content:center;padding:11px 16px;border-radius:10px;background:#1f5ab5;color:#fff;text-decoration:none;font-weight:700}.button.secondary{background:#e7eef8;color:#234b83}.topics{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:26px 0}.topic{padding:16px;border:1px solid #e1e8f0;border-radius:12px;background:white}.topic b{display:block;margin-bottom:5px}.topic span{font-size:14px;color:#617084;line-height:1.6}.note{padding:14px 16px;border-left:4px solid #4f7dbb;background:#eaf1fa;color:#526173;line-height:1.7;border-radius:6px}@media(max-width:600px){.wrap{margin:22px auto;padding:0 14px}.top{padding:15px 14px}}
+  </style>
+</head>
+<body>
+  <header class="top"><a href="../../../index.html">← 返回 PLC 应用技术学习资源</a></header>
+  <main class="wrap">
+    <div class="eyebrow">PLC 应用技术 · 水位控制综合案例</div>
+    <h1>水位数据链：3D教学动画</h1>
+    <p class="lead">用三维画面串起液位变送、PLC 模拟量采集、工程值换算、回差控制、泵阀联动和高低液位报警。视频约 84 秒，中文字幕已烧录。</p>
+    <div class="player">
+      <video controls playsinline preload="metadata" poster="./poster.png">
+        <source src="./water-level-data-chain-3d.mp4" type="video/mp4">
+        您的浏览器暂不支持视频播放，请使用新版 Edge 或 Chrome。
+      </video>
+    </div>
+    <div class="actions">
+      <a class="button" href="./animation.html">打开可播放的三维动画版</a>
+      <a class="button secondary" href="./water-level-data-chain.srt" download>下载字幕文件</a>
+    </div>
+    <section class="topics" aria-label="动画教学内容">
+      <div class="topic"><b>信号采集与换算</b><span>观察 4–20 mA 信号如何变成 PLC 原始值和水位工程量。</span></div>
+      <div class="topic"><b>4 m / 8 m 回差控制</b><span>液位到低位启动补水，到高位停止；中间区间保持状态。</span></div>
+      <div class="topic"><b>泵阀联动</b><span>观察 PLC 输出、补水泵和阀门如何同步动作。</span></div>
+      <div class="topic"><b>高低液位报警</b><span>查看报警触发条件，以及液位恢复正常后的手动复位。</span></div>
+    </section>
+    <p class="note">网页动画版提供播放、暂停和重播；动画中的原始值、阈值和运行时序用于教学示意，实际项目应以所用 PLC 与设备参数为准。</p>
+  </main>
+</body>
+</html>
