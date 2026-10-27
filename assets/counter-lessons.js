@@ -48,7 +48,6 @@
   const xAt = (t) => x0 + clamp(t / DURATION) * plotWidth;
   const inputAt = (t) => inputEvents.reduce((value, event) => t >= event.t ? event.v : value, 0);
   const countAt = (t) => riseTimes.filter((rise) => t >= rise).length;
-  const pulseAt = (t) => riseTimes.some((rise) => t >= rise && t < rise + 0.52);
   const pulseEvents = [{ t: 0, v: 0 }, { t: 2, v: 1 }, { t: 2.52, v: 0 }, { t: 9, v: 1 }, { t: 9.52, v: 0 }];
   function stepTrace(events, t, yFor) {
     let value = events[0].v;
@@ -87,30 +86,15 @@
     body += txt(470, 455, "↑上升沿 · ↓下降沿", 18, COLORS.muted, 400);
     return body;
   }
-  function directBlock(count) {
-    return rect(1535, 250, 305, 590, "#ffffff", 18, COLORS.line) +
-      txt(1687, 300, "CTU 计数器", 29, COLORS.ink, 650, "middle") +
-      rect(1570, 337, 235, 210, COLORS.bluePale, 16, "#b9ccd7") +
-      txt(1687, 382, "CU  ←  I0.0", 26, COLORS.blue, 600, "middle") +
-      txt(1687, 428, "R = 0", 22, COLORS.muted, 500, "middle") +
-      txt(1687, 467, "PV = 999", 22, COLORS.muted, 500, "middle") +
-      txt(1687, 514, "CU 上升沿时 CV +1", 20, COLORS.ink, 500, "middle") +
-      txt(1687, 602, "当前计数 CV", 24, COLORS.muted, 500, "middle") +
-      rect(1580, 627, 215, 128, "#202b2e", 14, "#39494b") +
-      txt(1687, 713, String(count).padStart(3, "0"), 68, "#58e0aa", 600, "middle") +
-      txt(1687, 790, "无需单独外接脉冲", 21, COLORS.teal, 550, "middle");
-  }
-  function rtrigBlock(count, pulse, t) {
-    const falling = fallTimes.some((fall) => t >= fall && t < fall + 1);
+  function countBlock(count) {
     return rect(1535, 250, 305, 590, "#ffffff", 18, COLORS.line) +
       txt(1687, 320, "计数值", 29, COLORS.ink, 650, "middle") +
-      `<circle cx="1687" cy="500" r="118" fill="${pulse ? COLORS.pale : "#edf1ed"}"/>` +
-      txt(1687, 545, String(count), 132, pulse ? COLORS.teal : COLORS.ink, 600, "middle") +
-      txt(1687, 660, `共计 ${count} 次`, 28, COLORS.teal, 500, "middle") +
-      txt(1687, 720, pulse ? "本次上升沿 +1" : falling ? "下降沿 · 不计数" : "等待下一次上升沿", 20, pulse ? COLORS.teal : falling ? COLORS.blue : COLORS.muted, 500, "middle");
+      `<circle cx="1687" cy="500" r="118" fill="${COLORS.pale}"/>` +
+      txt(1687, 545, String(count), 132, COLORS.teal, 600, "middle") +
+      txt(1687, 660, `共计 ${count} 次`, 28, COLORS.teal, 500, "middle");
   }
   function render(config, t) {
-    const input = inputAt(t), count = countAt(t), pulse = config.key === "rtrig" && pulseAt(t);
+    const input = inputAt(t), count = countAt(t);
     const label = config.labels.find((item) => t >= item.start && t < item.end)?.text ?? config.labels.at(-1).text;
     let body = `<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" role="img" aria-label="${esc(config.title)}" style="font-family:'Noto Sans SC',sans-serif">`;
     body += rect(0, 0, 1920, 1080, COLORS.paper, 0);
@@ -131,7 +115,7 @@
         rect(950, 565, 430, 150, COLORS.bluePale, 16, "#c6d7e1") +
         txt(1165, 615, "1→0 下降沿", 25, COLORS.blue, 650, "middle") +
         txt(1165, 660, "不计数，等待下一次按下", 19, COLORS.ink, 500, "middle");
-      body += directBlock(count);
+      body += countBlock(count);
     } else {
       body += txt(470, 515, "R_TRIG.Q 脉冲", 24, COLORS.blue, 600);
       body += line(x0, 485, x0 + plotWidth, 485, COLORS.line, 1) + line(x0, 535, x0 + plotWidth, 535, COLORS.line, 1);
@@ -144,7 +128,7 @@
         rect(950, 625, 430, 112, COLORS.bluePale, 16, "#c6d7e1") +
         txt(1165, 670, "下降沿 → Q 不触发", 20, COLORS.blue, 600, "middle") +
         txt(1165, 710, "右侧计数保持不变", 18, COLORS.ink, 400, "middle");
-      body += rtrigBlock(count, pulse, t);
+      body += countBlock(count);
     }
     body += txt(1425, 808, "时间 / 秒 →", 17, COLORS.muted, 400, "end");
     body += rect(96, 880, 1728, 110, COLORS.ink, 18) + txt(960, 949, label, 34, COLORS.white, 500, "middle");
