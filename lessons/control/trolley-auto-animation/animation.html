@@ -1,0 +1,4790 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="台车自动往返控制三维结构原型，用于 PLC 教学微动画策划与设备结构关系确认。" />
+  <link rel="icon" href="data:," />
+  <title>台车自动往返控制 · 三维结构原型与 PLC 仿真</title>
+  <style>
+    :root {
+      --ink: #18272e;
+      --ink-soft: #304650;
+      --muted: #6b7d85;
+      --muted-strong: #52656e;
+      --line: rgba(26, 47, 56, 0.12);
+      --line-strong: rgba(26, 47, 56, 0.2);
+      --paper: #f7f8f5;
+      --stage-top: #f6fafb;
+      --stage-bottom: #cbd7db;
+      --amber: #d59b27;
+      --amber-deep: #a87610;
+      --orange: #d46434;
+      --teal: #247174;
+      --blue: #4b7187;
+      --steel: #748a94;
+      --mono: "SFMono-Regular", "Cascadia Mono", "Consolas", "Liberation Mono", monospace;
+      --sans: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", "Source Han Sans SC", "Hiragino Sans GB", sans-serif;
+      --shadow: 0 18px 48px rgba(30, 51, 59, 0.13);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+    }
+
+    body {
+      margin: 0;
+      overflow: hidden;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 18% -10%, rgba(255, 255, 255, 0.98), transparent 39%),
+        linear-gradient(132deg, #edf1f0 0%, #e2e8e9 52%, #dce3e5 100%);
+      font-family: var(--sans);
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+
+    button { font: inherit; }
+
+    button:focus-visible,
+    canvas:focus-visible {
+      outline: 2px solid rgba(36, 113, 116, 0.82);
+      outline-offset: 3px;
+    }
+
+    .app-shell {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      width: 100%;
+      height: 100vh;
+      height: 100dvh;
+    }
+
+    .topbar {
+      position: relative;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 22px;
+      min-height: 78px;
+      padding: 12px 22px 11px 24px;
+      border-bottom: 1px solid rgba(26, 47, 56, 0.09);
+      background: rgba(249, 250, 247, 0.76);
+      backdrop-filter: blur(18px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      position: relative;
+      flex: 0 0 auto;
+      width: 35px;
+      height: 35px;
+      border: 1px solid rgba(24, 39, 46, 0.14);
+      border-radius: 9px;
+      background: linear-gradient(145deg, #fffdf7, #f0e4cb);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85), 0 7px 16px rgba(45, 54, 49, 0.07);
+      overflow: hidden;
+    }
+
+    .brand-mark span {
+      position: absolute;
+      left: 7px;
+      right: 7px;
+      height: 3px;
+      border-radius: 2px;
+      background: var(--ink);
+    }
+
+    .brand-mark span:nth-child(1) { top: 8px; background: var(--amber); }
+    .brand-mark span:nth-child(2) { top: 15px; left: 11px; right: 11px; }
+    .brand-mark span:nth-child(3) { top: 22px; background: var(--teal); }
+
+    .brand-copy { min-width: 0; }
+
+    .eyebrow {
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 8.5px;
+      font-weight: 600;
+      letter-spacing: 0.17em;
+      line-height: 1.35;
+      text-transform: uppercase;
+    }
+
+    .brand h1 {
+      margin: 2px 0 0;
+      font-size: clamp(19px, 1.55vw, 23px);
+      font-weight: 700;
+      letter-spacing: 0.028em;
+      line-height: 1.25;
+    }
+
+    .brand p {
+      margin: 2px 0 0;
+      color: var(--muted);
+      font-size: 10px;
+      letter-spacing: 0.025em;
+      line-height: 1.4;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+      flex: 0 0 auto;
+    }
+
+    .static-note {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 9px;
+      border: 1px solid rgba(26, 47, 56, 0.09);
+      border-radius: 7px;
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.35);
+      font-family: var(--mono);
+      font-size: 7.5px;
+      letter-spacing: 0.07em;
+      white-space: nowrap;
+    }
+
+    .static-note::before {
+      content: "";
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--teal);
+      box-shadow: 0 0 0 3px rgba(36, 113, 116, 0.1);
+    }
+
+    .mode-switch {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      padding: 3px;
+      border: 1px solid rgba(26, 47, 56, 0.11);
+      border-radius: 12px;
+      background: rgba(26, 47, 56, 0.045);
+      box-shadow: inset 0 1px 2px rgba(20, 35, 42, 0.04);
+    }
+
+    .mode-button {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      min-height: 35px;
+      padding: 0 13px;
+      border: 0;
+      border-radius: 9px;
+      color: var(--muted-strong);
+      background: transparent;
+      font-size: 10.5px;
+      font-weight: 650;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: color 160ms ease, background 160ms ease, box-shadow 160ms ease;
+    }
+
+    .mode-button:hover {
+      color: var(--ink);
+      background: rgba(255, 255, 255, 0.55);
+    }
+
+    .mode-button.is-active {
+      color: #f7faf9;
+      background: var(--ink);
+      box-shadow: 0 5px 13px rgba(23, 39, 46, 0.18);
+    }
+
+    .mode-index {
+      font-family: var(--mono);
+      font-size: 8px;
+      font-weight: 500;
+      opacity: 0.55;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 366px;
+      gap: 14px;
+      min-height: 0;
+      padding: 0 16px 16px;
+    }
+
+    .stage-card {
+      position: relative;
+      min-width: 0;
+      min-height: 0;
+      overflow: hidden;
+      border: 1px solid rgba(29, 50, 59, 0.12);
+      border-radius: 21px;
+      background:
+        radial-gradient(ellipse at 50% 16%, #fbfdfd 0%, #eef4f5 30%, #dce6e8 68%, #cbd7db 100%);
+      box-shadow: var(--shadow), inset 0 1px 0 rgba(255, 255, 255, 0.86);
+      isolation: isolate;
+    }
+
+    .stage-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(44, 77, 89, 0.028) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(44, 77, 89, 0.028) 1px, transparent 1px);
+      background-size: 58px 58px;
+      mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.78), transparent 76%);
+    }
+
+    #viewport {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      display: block;
+      width: 100%;
+      height: 100%;
+      touch-action: none;
+      cursor: grab;
+    }
+
+    #viewport.is-dragging { cursor: grabbing; }
+    #viewport.is-hovering { cursor: pointer; }
+
+    .stage-vignette {
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse at 50% 48%, transparent 45%, rgba(40, 64, 74, 0.065) 100%),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.05), transparent 23%, transparent 77%, rgba(35, 57, 66, 0.05));
+    }
+
+    .annotation-layer {
+      position: absolute;
+      inset: 0;
+      z-index: 6;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .leader-svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+      pointer-events: none;
+    }
+
+    .leader-line {
+      fill: none;
+      stroke: rgba(29, 50, 60, 0.44);
+      stroke-width: 1;
+      stroke-dasharray: 3 3;
+      stroke-linecap: round;
+    }
+
+    .leader-dot {
+      stroke: rgba(255, 255, 255, 0.95);
+      stroke-width: 1.1;
+    }
+
+    .callout-layer {
+      position: absolute;
+      inset: 0;
+    }
+
+    .callout {
+      --tone: var(--steel);
+      position: absolute;
+      top: 0;
+      left: 0;
+      min-width: 0;
+      max-width: 190px;
+      padding: 6px 9px 6px 10px;
+      border: 1px solid rgba(29, 50, 60, 0.14);
+      border-radius: 8px;
+      color: var(--ink);
+      background: rgba(253, 253, 250, 0.94);
+      box-shadow: 0 7px 20px rgba(32, 52, 61, 0.12), 0 1px 2px rgba(32, 52, 61, 0.05);
+      text-align: left;
+      white-space: nowrap;
+      pointer-events: auto;
+      cursor: pointer;
+      transition: border-color 150ms ease, box-shadow 150ms ease, background 150ms ease, opacity 120ms ease;
+      backdrop-filter: blur(9px);
+    }
+
+    .callout::before {
+      content: "";
+      position: absolute;
+      top: 6px;
+      bottom: 6px;
+      left: 0;
+      width: 2px;
+      border-radius: 2px;
+      background: var(--tone);
+      opacity: 0.85;
+    }
+
+    .callout:hover {
+      border-color: rgba(29, 50, 60, 0.3);
+      background: #fffefa;
+      box-shadow: 0 10px 26px rgba(32, 52, 61, 0.17);
+    }
+
+    .callout.is-selected {
+      border-color: rgba(175, 121, 14, 0.52);
+      box-shadow: 0 0 0 1px rgba(213, 155, 39, 0.16), 0 11px 28px rgba(32, 52, 61, 0.16);
+    }
+
+    .callout--static {
+      cursor: default;
+      pointer-events: none;
+    }
+
+    .callout__title {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      color: var(--ink);
+      font-size: 10px;
+      font-weight: 650;
+      letter-spacing: 0.02em;
+      line-height: 1.35;
+    }
+
+    .callout__code {
+      flex: 0 0 auto;
+      color: var(--tone);
+      font-family: var(--mono);
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+    }
+
+    .callout__note {
+      margin-top: 1px;
+      color: var(--muted);
+      font-size: 8px;
+      font-weight: 450;
+      letter-spacing: 0.015em;
+      line-height: 1.35;
+    }
+
+    .callout__arrow {
+      color: var(--amber-deep);
+      font-family: var(--mono);
+      font-size: 12px;
+      line-height: 1;
+    }
+
+    .callout--direction {
+      border-color: rgba(168, 118, 16, 0.22);
+      background: rgba(255, 251, 240, 0.96);
+    }
+
+    .callout.is-filtered {
+      opacity: 0.25;
+    }
+
+    .stage-top,
+    .stage-bottom {
+      position: absolute;
+      z-index: 8;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      pointer-events: none;
+    }
+
+    .stage-top {
+      top: 14px;
+      left: 16px;
+      right: 16px;
+      align-items: flex-start;
+    }
+
+    .stage-bottom {
+      right: 16px;
+      bottom: 12px;
+      left: 16px;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      min-height: 27px;
+      padding: 0 10px;
+      border: 1px solid rgba(34, 55, 64, 0.1);
+      border-radius: 999px;
+      color: var(--ink-soft);
+      background: rgba(252, 254, 253, 0.7);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(10px);
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.045em;
+    }
+
+    .status-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--teal);
+      box-shadow: 0 0 0 3px rgba(36, 113, 116, 0.1);
+    }
+
+    .stage-card.is-exploded .status-dot {
+      background: var(--amber-deep);
+      box-shadow: 0 0 0 3px rgba(168, 118, 16, 0.13);
+    }
+
+    .status-pill.is-running .status-dot {
+      background: #3d9e65;
+      box-shadow: 0 0 0 3px rgba(61, 158, 101, 0.13);
+      animation: status-live 1.25s ease-in-out infinite;
+    }
+
+    .status-pill.is-braking .status-dot {
+      background: #d18a42;
+      box-shadow: 0 0 0 3px rgba(209, 138, 66, 0.13);
+    }
+
+    .status-pill.is-dwelling .status-dot {
+      background: #c89b26;
+      box-shadow: 0 0 0 3px rgba(200, 155, 38, 0.14);
+      animation: status-live 0.85s ease-in-out infinite;
+    }
+
+    @keyframes status-live {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .status-divider {
+      width: 1px;
+      height: 10px;
+      margin: 0 1px;
+      background: rgba(34, 55, 64, 0.13);
+    }
+
+    .status-muted {
+      color: #7e8f96;
+      font-family: var(--mono);
+      font-size: 7px;
+      font-weight: 500;
+      letter-spacing: 0.11em;
+      transition: color 150ms ease;
+    }
+
+    .status-pill.is-running .status-muted { color: #2f7c58; }
+    .status-pill.is-braking .status-muted { color: #96642e; }
+    .status-pill.is-dwelling .status-muted { color: #8d6d1f; }
+
+    .view-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      pointer-events: auto;
+    }
+
+    .view-group {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      padding: 2px;
+      border: 1px solid rgba(34, 55, 64, 0.11);
+      border-radius: 9px;
+      background: rgba(251, 253, 252, 0.74);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(10px);
+    }
+
+    .view-button {
+      min-height: 27px;
+      padding: 0 8px;
+      border: 0;
+      border-radius: 6px;
+      color: var(--muted-strong);
+      background: transparent;
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: color 150ms ease, background 150ms ease;
+    }
+
+    .view-button:hover { color: var(--ink); background: rgba(255, 255, 255, 0.65); }
+    .view-button.is-active { color: #f7faf8; background: var(--ink); }
+    .view-button.is-active:hover { color: #f7faf8; background: var(--ink); }
+
+    .reset-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      min-height: 32px;
+      padding: 0 9px;
+      border: 1px solid rgba(34, 55, 64, 0.11);
+      border-radius: 8px;
+      color: var(--muted-strong);
+      background: rgba(251, 253, 252, 0.74);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      cursor: pointer;
+      backdrop-filter: blur(10px);
+      transition: color 150ms ease, background 150ms ease, border-color 150ms ease;
+    }
+
+    .reset-button:hover { color: var(--ink); background: #fff; border-color: rgba(34, 55, 64, 0.22); }
+
+    .reset-button svg {
+      width: 14px;
+      height: 14px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.35;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      opacity: 0.82;
+    }
+
+    .interaction-hint {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 10px;
+      border: 1px solid rgba(34, 55, 64, 0.08);
+      border-radius: 999px;
+      color: rgba(55, 75, 84, 0.65);
+      background: rgba(252, 254, 253, 0.48);
+      backdrop-filter: blur(8px);
+      font-size: 8px;
+      font-weight: 500;
+      letter-spacing: 0.025em;
+    }
+
+    .interaction-hint i {
+      width: 2px;
+      height: 2px;
+      border-radius: 50%;
+      background: rgba(55, 75, 84, 0.34);
+    }
+
+    .stage-scale {
+      color: rgba(51, 73, 82, 0.54);
+      font-family: var(--mono);
+      font-size: 7.5px;
+      letter-spacing: 0.06em;
+      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+    }
+
+    .hover-tip {
+      position: absolute;
+      z-index: 9;
+      max-width: 240px;
+      padding: 5px 8px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 6px;
+      color: #f4f8f8;
+      background: rgba(20, 37, 44, 0.88);
+      box-shadow: 0 6px 18px rgba(20, 34, 40, 0.2);
+      font-size: 9px;
+      font-weight: 500;
+      letter-spacing: 0.025em;
+      line-height: 1.4;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transform: translate(12px, 14px);
+      transition: opacity 100ms ease;
+    }
+
+    .hover-tip.is-visible { opacity: 1; }
+    .hover-tip b { color: #f0c86a; font-weight: 650; }
+
+    .stage-loading {
+      position: absolute;
+      inset: 0;
+      z-index: 12;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 11px;
+      color: var(--muted);
+      background: rgba(239, 245, 246, 0.86);
+      backdrop-filter: blur(8px);
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.09em;
+      transition: opacity 350ms ease, visibility 350ms ease;
+    }
+
+    .stage-loading.is-hidden { visibility: hidden; opacity: 0; pointer-events: none; }
+
+    .loading-line {
+      position: relative;
+      display: block;
+      width: 72px;
+      height: 2px;
+      overflow: hidden;
+      border-radius: 2px;
+      background: rgba(35, 57, 66, 0.12);
+    }
+
+    .loading-line::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 38%;
+      height: 100%;
+      background: var(--ink-soft);
+      animation: loading-sweep 1.1s ease-in-out infinite;
+    }
+
+    @keyframes loading-sweep {
+      0% { transform: translateX(-110%); }
+      100% { transform: translateX(280%); }
+    }
+
+    .fatal-error {
+      position: absolute;
+      inset: 0;
+      z-index: 30;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 28px;
+      background: rgba(240, 244, 245, 0.96);
+      backdrop-filter: blur(10px);
+    }
+
+    .fatal-error[hidden] { display: none; }
+
+    .error-card {
+      width: min(420px, 100%);
+      padding: 24px 24px 21px;
+      border: 1px solid rgba(128, 56, 37, 0.22);
+      border-radius: 14px;
+      background: rgba(255, 252, 249, 0.96);
+      box-shadow: 0 18px 48px rgba(55, 43, 38, 0.13);
+    }
+
+    .error-card .error-code {
+      color: #a04a33;
+      font-family: var(--mono);
+      font-size: 8px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+    }
+
+    .error-card h2 {
+      margin: 6px 0 8px;
+      color: #4b281e;
+      font-size: 19px;
+      line-height: 1.35;
+    }
+
+    .error-card p {
+      margin: 0;
+      color: #765f56;
+      font-size: 11px;
+      line-height: 1.75;
+    }
+
+    .error-card button {
+      margin-top: 16px;
+      min-height: 34px;
+      padding: 0 13px;
+      border: 1px solid rgba(128, 56, 37, 0.2);
+      border-radius: 8px;
+      color: #5d3024;
+      background: #fffaf6;
+      font-size: 10px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .inspector {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      overflow: hidden;
+      border: 1px solid rgba(30, 51, 61, 0.11);
+      border-radius: 21px;
+      background: rgba(250, 251, 248, 0.9);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+
+    .inspector-scroll {
+      flex: 1 1 auto;
+      min-height: 0;
+      padding: 18px 17px 10px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(39, 61, 71, 0.22) transparent;
+    }
+
+    .inspector-scroll::-webkit-scrollbar { width: 5px; }
+    .inspector-scroll::-webkit-scrollbar-thumb { border-radius: 99px; background: rgba(39, 61, 71, 0.18); }
+
+    .panel-section { padding-bottom: 15px; }
+    .panel-section + .panel-section { border-top: 1px solid rgba(35, 57, 67, 0.09); padding-top: 14px; }
+
+    .section-heading {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 9px;
+    }
+
+    .section-heading h2 {
+      margin: 2px 0 0;
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.035em;
+      line-height: 1.35;
+    }
+
+    .section-count {
+      color: #87961a;
+      font-family: var(--mono);
+      font-size: 7.5px;
+      letter-spacing: 0.06em;
+    }
+
+    .info-card {
+      position: relative;
+      min-height: 164px;
+      padding: 15px;
+      border: 1px solid rgba(28, 49, 59, 0.1);
+      border-radius: 14px;
+      background:
+        linear-gradient(148deg, rgba(255, 255, 255, 0.8), rgba(238, 243, 242, 0.88)),
+        repeating-linear-gradient(135deg, rgba(36, 113, 116, 0.028) 0 1px, transparent 1px 9px);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    }
+
+    .info-card.is-selecting { border-color: rgba(168, 118, 16, 0.24); }
+
+    .card-kicker {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 5px;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 7.5px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .card-kicker .dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--tone, var(--amber));
+    }
+
+    .info-card h2 {
+      margin: 0;
+      font-size: clamp(17px, 1.4vw, 20px);
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      line-height: 1.28;
+    }
+
+    .info-card h2 .inline-code {
+      display: inline-block;
+      margin-left: 6px;
+      padding: 2px 5px;
+      border: 1px solid rgba(34, 56, 66, 0.1);
+      border-radius: 3px;
+      color: var(--tone, var(--teal));
+      background: rgba(255, 255, 255, 0.5);
+      font-family: var(--mono);
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      vertical-align: 2px;
+    }
+
+    .info-desc {
+      margin: 7px 0 0;
+      color: var(--muted-strong);
+      font-size: 10px;
+      line-height: 1.68;
+      letter-spacing: 0.012em;
+    }
+
+    .info-facts {
+      display: grid;
+      gap: 5px;
+      margin: 11px 0 0;
+      padding-top: 9px;
+      border-top: 1px solid rgba(34, 56, 66, 0.08);
+    }
+
+    .info-facts > div {
+      display: grid;
+      grid-template-columns: 52px minmax(0, 1fr);
+      gap: 8px;
+    }
+
+    .info-facts dt {
+      color: var(--muted);
+      font-size: 8px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      line-height: 1.55;
+    }
+
+    .info-facts dd {
+      margin: 0;
+      color: var(--ink-soft);
+      font-size: 9px;
+      line-height: 1.58;
+    }
+
+    .overall-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 11px;
+    }
+
+    .overall-chip {
+      padding: 3px 6px;
+      border: 1px solid rgba(34, 56, 66, 0.09);
+      border-radius: 4px;
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.4);
+      font-size: 8px;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+    }
+
+    .info-actions {
+      display: flex;
+      gap: 6px;
+      margin-top: 12px;
+    }
+
+    .info-actions[hidden] { display: none; }
+
+    .action-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      min-height: 30px;
+      padding: 0 10px;
+      border: 1px solid rgba(34, 56, 66, 0.13);
+      border-radius: 7px;
+      color: var(--muted-strong);
+      background: rgba(255, 255, 255, 0.55);
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.025em;
+      cursor: pointer;
+      transition: color 150ms ease, background 150ms ease, border-color 150ms ease;
+    }
+
+    .action-button:hover { color: var(--ink); background: #fff; border-color: rgba(34, 56, 66, 0.22); }
+    .action-button.is-primary { color: #f7faf8; background: var(--ink); border-color: var(--ink); }
+    .action-button.is-primary:hover { background: #223940; border-color: #223940; }
+
+    /* PLC 运行控制卡 */
+    .sim-panel-section { padding-bottom: 15px; }
+
+    .sim-card {
+      position: relative;
+      overflow: hidden;
+      padding: 14px;
+      border: 1px solid rgba(23, 39, 46, 0.36);
+      border-radius: 15px;
+      color: #eef5f2;
+      background:
+        radial-gradient(ellipse at 100% 0%, rgba(85, 142, 134, 0.3), transparent 48%),
+        linear-gradient(142deg, #1c3036 0%, #203d42 58%, #1a3137 100%);
+      box-shadow:
+        0 11px 28px rgba(23, 39, 46, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.09);
+    }
+
+    .sim-card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(177, 214, 205, 0.045) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(177, 214, 205, 0.045) 1px, transparent 1px);
+      background-size: 22px 22px;
+      mask-image: linear-gradient(140deg, rgba(0, 0, 0, 0.65), transparent 76%);
+    }
+
+    .sim-card > * { position: relative; z-index: 1; }
+
+    .sim-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 11px;
+    }
+
+    .sim-head .eyebrow { color: #99b7b3; }
+
+    .sim-head h2 {
+      margin: 3px 0 0;
+      color: #f7fbf8;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      line-height: 1.25;
+    }
+
+    .sim-live {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      flex: 0 0 auto;
+      max-width: 132px;
+      min-height: 24px;
+      padding: 0 8px;
+      border: 1px solid rgba(201, 227, 220, 0.16);
+      border-radius: 999px;
+      color: #c8d9d4;
+      background: rgba(8, 22, 27, 0.26);
+      font-size: 8px;
+      font-weight: 600;
+      letter-spacing: 0.035em;
+      line-height: 1.25;
+      text-align: right;
+    }
+
+    .sim-live-dot {
+      flex: 0 0 auto;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: #8ba29d;
+      box-shadow: 0 0 0 3px rgba(139, 162, 157, 0.11);
+      transition: background 150ms ease, box-shadow 150ms ease;
+    }
+
+    .sim-card[data-phase="forward"] .sim-live-dot,
+    .sim-card[data-phase="reverse"] .sim-live-dot {
+      background: #62dd91;
+      box-shadow: 0 0 0 3px rgba(98, 221, 145, 0.14);
+      animation: live-pulse 1.35s ease-in-out infinite;
+    }
+
+    .sim-card[data-phase="dwell"] .sim-live-dot {
+      background: #e8b94d;
+      box-shadow: 0 0 0 3px rgba(232, 185, 77, 0.15);
+      animation: live-pulse 0.9s ease-in-out infinite;
+    }
+
+    .sim-card[data-phase="stopping"] .sim-live-dot {
+      background: #e8875d;
+      box-shadow: 0 0 0 3px rgba(232, 135, 93, 0.13);
+    }
+
+    .sim-card[data-phase="idle"] .sim-live-dot {
+      background: #849b97;
+      box-shadow: 0 0 0 3px rgba(132, 155, 151, 0.1);
+    }
+
+    @keyframes live-pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(0.72); opacity: 0.6; }
+    }
+
+    .sim-main {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 1.22fr;
+      gap: 10px;
+      align-items: stretch;
+    }
+
+    .sim-counter {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-height: 74px;
+      padding: 8px 11px;
+      border: 1px solid rgba(203, 228, 220, 0.13);
+      border-radius: 9px;
+      background: rgba(8, 23, 28, 0.2);
+    }
+
+    .sim-counter > span:first-child {
+      color: #9bb2ae;
+      font-size: 8px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+
+    .sim-counter-value {
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+      margin-top: 2px;
+      color: #f4faf7;
+      line-height: 1;
+    }
+
+    .sim-counter-value strong {
+      color: #f2c767;
+      font-family: var(--mono);
+      font-size: 28px;
+      font-weight: 500;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      transition: color 160ms ease, transform 160ms ease;
+    }
+
+    .sim-counter-value strong.is-bumped {
+      color: #fff0a9;
+      transform: scale(1.12);
+    }
+
+    .sim-counter-value small {
+      color: #aebfba;
+      font-size: 8px;
+      font-weight: 500;
+    }
+
+    .sim-counter-note {
+      margin-top: 3px;
+      color: #78918d;
+      font-size: 7px;
+      letter-spacing: 0.02em;
+    }
+
+    .sim-actions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 5px;
+      align-content: center;
+    }
+
+    .sim-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      min-height: 32px;
+      padding: 0 6px;
+      border: 1px solid rgba(207, 231, 224, 0.18);
+      border-radius: 7px;
+      color: #d9e8e3;
+      background: rgba(255, 255, 255, 0.055);
+      font-size: 9px;
+      font-weight: 650;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      transition: background 150ms ease, border-color 150ms ease, color 150ms ease, opacity 150ms ease;
+    }
+
+    .sim-button:hover:not(:disabled) {
+      border-color: rgba(222, 240, 234, 0.34);
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .sim-button--start {
+      color: #f3fff7;
+      background: #357f58;
+      border-color: rgba(121, 221, 157, 0.3);
+    }
+
+    .sim-button--start:hover:not(:disabled) {
+      background: #3d9364;
+      border-color: rgba(146, 238, 179, 0.48);
+    }
+
+    .sim-button--stop {
+      color: #fff5f1;
+      background: #843f33;
+      border-color: rgba(232, 137, 109, 0.28);
+    }
+
+    .sim-button--stop:hover:not(:disabled) {
+      background: #9a493b;
+      border-color: rgba(249, 160, 132, 0.45);
+    }
+
+    .sim-button--reset {
+      grid-column: span 2;
+      min-height: 27px;
+      color: #b7c9c4;
+      background: transparent;
+      font-size: 8px;
+    }
+
+    .sim-button:disabled {
+      cursor: not-allowed;
+      opacity: 0.34;
+    }
+
+    .sim-io {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 4px;
+      margin-top: 9px;
+    }
+
+    .io-chip {
+      --io-color: #8eb9a3;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      min-height: 24px;
+      padding: 0 6px;
+      border: 1px solid rgba(201, 225, 218, 0.1);
+      border-radius: 5px;
+      color: #a9beb9;
+      background: rgba(8, 22, 27, 0.18);
+      font-family: var(--mono);
+      font-size: 7px;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+      white-space: nowrap;
+      transition: color 150ms ease, border-color 150ms ease, background 150ms ease;
+    }
+
+    .io-chip .io-led {
+      flex: 0 0 auto;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: #4b5d59;
+      box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.18);
+      transition: background 120ms ease, box-shadow 120ms ease;
+    }
+
+    .io-chip.is-on {
+      border-color: color-mix(in srgb, var(--io-color) 48%, transparent);
+      color: #f2fbf6;
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .io-chip.is-on .io-led {
+      background: var(--io-color);
+      box-shadow: 0 0 7px color-mix(in srgb, var(--io-color) 70%, transparent);
+    }
+
+    .io-chip[data-io="SB1"] { --io-color: #65d395; }
+    .io-chip[data-io="SB2"] { --io-color: #ec8064; }
+    .io-chip[data-io="SQ2"] { --io-color: #efbd54; }
+    .io-chip[data-io="SQ1"] { --io-color: #efbd54; }
+    .io-chip[data-io="KM1"] { --io-color: #69d590; }
+    .io-chip[data-io="KM2"] { --io-color: #e99d58; }
+
+    .sim-lower {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 9px;
+    }
+
+    .sim-speed {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      color: #9fb8b2;
+      font-family: var(--mono);
+      font-size: 7px;
+      letter-spacing: 0.04em;
+    }
+
+    .sim-speed input[type="range"] {
+      width: 88px;
+      height: 3px;
+      margin: 0;
+      accent-color: #4bb67c;
+      cursor: pointer;
+    }
+
+    .sim-speed output {
+      min-width: 28px;
+      color: #dcebe6;
+      font-family: var(--mono);
+      font-size: 7.5px;
+    }
+
+    .sim-scan {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      color: #7f9a94;
+      font-family: var(--mono);
+      font-size: 6.5px;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+    }
+
+    .sim-scan::before {
+      content: "";
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: #5cc586;
+      box-shadow: 0 0 5px rgba(92, 197, 134, 0.6);
+    }
+
+    .sim-note {
+      margin: 8px 0 0;
+      padding-top: 7px;
+      border-top: 1px solid rgba(202, 226, 219, 0.1);
+      color: #8ba49e;
+      font-size: 8px;
+      line-height: 1.55;
+      letter-spacing: 0.015em;
+    }
+
+    .sim-note strong { color: #c8dcd6; font-weight: 600; }
+
+    .control-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px;
+    }
+
+    .control-button {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      min-height: 38px;
+      padding: 0 10px;
+      border: 1px solid rgba(34, 56, 66, 0.11);
+      border-radius: 8px;
+      color: var(--muted-strong);
+      background: rgba(255, 255, 255, 0.42);
+      text-align: left;
+      font-size: 9.5px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      transition: color 150ms ease, background 150ms ease, border-color 150ms ease;
+    }
+
+    .control-button:hover { color: var(--ink); background: rgba(255, 255, 255, 0.9); border-color: rgba(34, 56, 66, 0.2); }
+
+    .control-button .state {
+      color: #8a9a9f;
+      font-family: var(--mono);
+      font-size: 7px;
+      font-weight: 500;
+      letter-spacing: 0.03em;
+      white-space: nowrap;
+    }
+
+    .control-button[aria-pressed="true"] .state { color: var(--teal); }
+    .control-button[aria-pressed="false"] { color: var(--muted); background: rgba(34, 56, 66, 0.025); }
+    .control-button[aria-pressed="false"] .state { color: #a1adb0; }
+
+    .control-button.span-2 { grid-column: span 2; }
+
+    .isolate-status {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin-top: 8px;
+      padding: 6px 8px;
+      border: 1px solid rgba(168, 118, 16, 0.16);
+      border-radius: 7px;
+      color: #8d6a22;
+      background: rgba(255, 249, 234, 0.68);
+      font-size: 8.5px;
+      line-height: 1.45;
+    }
+
+    .isolate-status[hidden] { display: none; }
+
+    .isolate-status button {
+      margin-left: auto;
+      padding: 2px 5px;
+      border: 1px solid rgba(168, 118, 16, 0.22);
+      border-radius: 4px;
+      color: #7d5b17;
+      background: rgba(255, 255, 255, 0.55);
+      font-size: 7.5px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .part-list { display: grid; gap: 2px; }
+
+    .part-row {
+      --chip: var(--steel);
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 28px;
+      align-items: stretch;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      background: transparent;
+      transition: background 140ms ease, border-color 140ms ease, opacity 140ms ease;
+    }
+
+    .part-row:hover { background: rgba(255, 255, 255, 0.56); border-color: rgba(35, 59, 69, 0.07); }
+    .part-row.is-active { background: rgba(255, 255, 255, 0.91); border-color: rgba(33, 56, 66, 0.14); box-shadow: 0 4px 14px rgba(36, 54, 62, 0.055); }
+    .part-row.is-hidden { opacity: 0.49; }
+    .part-row.is-isolated-out { opacity: 0.33; }
+
+    .part-select {
+      display: grid;
+      grid-template-columns: 24px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 7px;
+      min-width: 0;
+      padding: 6px 4px 6px 7px;
+      border: 0;
+      border-radius: 7px;
+      color: var(--ink-soft);
+      background: transparent;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .part-chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 20px;
+      border-radius: 5px;
+      color: var(--chip);
+      background: color-mix(in srgb, var(--chip) 10%, transparent);
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--chip) 15%, transparent);
+      font-family: var(--mono);
+      font-size: 7px;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+    }
+
+    .part-main { display: flex; align-items: baseline; gap: 5px; min-width: 0; }
+
+    .part-name {
+      overflow: hidden;
+      color: var(--ink-soft);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.015em;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .part-row.is-active .part-name { color: var(--ink); }
+
+    .part-code {
+      flex: 0 0 auto;
+      color: #8b9a9f;
+      font-family: var(--mono);
+      font-size: 6.8px;
+      font-weight: 500;
+      letter-spacing: 0.035em;
+    }
+
+    .part-tag {
+      color: #8a999e;
+      font-size: 7.5px;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+    }
+
+    .part-row.is-active .part-tag { color: var(--chip); }
+
+    .part-eye {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      min-height: 100%;
+      border: 0;
+      border-left: 1px solid rgba(34, 56, 66, 0.07);
+      border-radius: 0 7px 7px 0;
+      color: #8c9b9f;
+      background: transparent;
+      cursor: pointer;
+      transition: color 140ms ease, background 140ms ease;
+    }
+
+    .part-eye:hover { color: var(--ink-soft); background: rgba(255, 255, 255, 0.55); }
+    .part-row.is-hidden .part-eye { color: #b47b65; }
+    .part-eye svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; }
+
+    .assembly-list {
+      display: grid;
+      gap: 5px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      counter-reset: assembly;
+    }
+
+    .assembly-list li {
+      display: grid;
+      grid-template-columns: 21px minmax(0, 1fr);
+      gap: 6px;
+      padding: 5px 0;
+      counter-increment: assembly;
+    }
+
+    .assembly-list li::before {
+      content: "0" counter(assembly);
+      color: rgba(56, 78, 87, 0.44);
+      font-family: var(--mono);
+      font-size: 7.2px;
+      letter-spacing: 0.04em;
+      line-height: 1.9;
+    }
+
+    .assembly-list p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 9px;
+      line-height: 1.65;
+    }
+
+    .assembly-list strong { color: var(--ink-soft); font-weight: 650; }
+
+    .inspector-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex: 0 0 auto;
+      gap: 12px;
+      padding: 9px 18px;
+      border-top: 1px solid rgba(35, 57, 67, 0.09);
+      color: #84939a;
+      background: rgba(245, 247, 245, 0.52);
+      font-family: var(--mono);
+      font-size: 6.8px;
+      letter-spacing: 0.055em;
+    }
+
+    @media (max-width: 1220px) {
+      .workspace { grid-template-columns: minmax(0, 1fr) 338px; }
+      .part-tag { display: none; }
+      .static-note { display: none; }
+    }
+
+    @media (max-width: 980px) {
+      body { overflow: auto; }
+      .app-shell { height: auto; min-height: 100%; }
+      .workspace { grid-template-columns: minmax(0, 1fr); min-height: 0; }
+      .stage-card { height: min(66vh, 640px); min-height: 510px; }
+      .inspector { max-height: none; }
+      .inspector-scroll { overflow: visible; }
+      .part-list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3px; }
+      .part-tag { display: inline; }
+      .top-actions { gap: 8px; }
+    }
+
+    @media (max-width: 720px) {
+      .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 10px;
+        padding: 12px 14px 10px;
+      }
+
+      .top-actions { width: 100%; flex-wrap: wrap; justify-content: flex-start; }
+      .mode-switch { flex: 1 1 auto; }
+      .mode-button { flex: 1 1 auto; justify-content: center; }
+      .workspace { gap: 10px; padding: 0 10px 10px; }
+      .stage-card { height: min(64vh, 570px); min-height: 480px; border-radius: 17px; }
+      .inspector { border-radius: 17px; }
+      .stage-top { top: 10px; left: 11px; right: 11px; gap: 7px; }
+      .stage-bottom { right: 11px; bottom: 9px; left: 11px; }
+      .interaction-hint { display: none; }
+      .status-pill { gap: 5px; padding: 0 8px; font-size: 8px; }
+      .status-muted { font-size: 6.5px; letter-spacing: 0.045em; }
+      .view-button { padding: 0 6px; font-size: 8px; }
+      .reset-button { width: 30px; padding: 0; }
+      .reset-button span { display: none; }
+      .stage-scale { font-size: 6.8px; }
+      .inspector-scroll { padding: 15px 13px 8px; }
+      .sim-card { padding: 12px; }
+      .sim-main { grid-template-columns: minmax(0, 1fr) 1.2fr; gap: 7px; }
+      .sim-counter { padding: 7px 8px; }
+      .sim-counter-value strong { font-size: 25px; }
+      .sim-speed input[type="range"] { width: 72px; }
+      .part-list { grid-template-columns: minmax(0, 1fr); }
+      .callout { padding: 5px 7px; }
+      .callout__title { font-size: 9px; }
+      .callout__note { display: none; }
+      .part-tag { display: inline; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+      }
+    }
+  </style>
+  <link rel="stylesheet" href="./animation.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></div>
+        <div class="brand-copy">
+          <div class="eyebrow">TROLLEY RECIPROCATION / PLC SIMULATION</div>
+          <h1>台车自动往返控制</h1>
+          <p>三维结构原型 · PLC 自动往返、启停与计数仿真</p>
+        </div>
+      </div>
+      <div class="top-actions">
+        <span class="static-note">PLC SIM · 自动往返</span>
+        <div class="mode-switch" role="group" aria-label="装配展示状态">
+          <button class="mode-button is-active" type="button" data-mode="assembled" aria-pressed="true">
+            <span class="mode-index">01</span><span>整体装配</span>
+          </button>
+          <button class="mode-button" type="button" data-mode="exploded" aria-pressed="false">
+            <span class="mode-index">02</span><span>零部件拆分</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <section class="stage-card" id="stage" aria-label="台车自动往返控制三维结构模型与 PLC 运行仿真">
+        <canvas id="viewport" tabindex="0" aria-label="三维模型，可拖动旋转、滚轮缩放、右键平移并单击选择部件；单击绿色或红色按钮可启动或停止仿真"></canvas>
+
+        <div class="stage-vignette" aria-hidden="true"></div>
+
+        <div class="annotation-layer" id="annotation-layer">
+          <svg class="leader-svg" id="leader-svg" aria-hidden="true"></svg>
+          <div class="callout-layer" id="callout-layer"></div>
+        </div>
+
+        <div class="stage-top">
+          <div class="status-pill" id="status-pill">
+            <span class="status-dot"></span>
+            <span id="mode-status">整体装配</span>
+            <span class="status-divider"></span>
+            <span class="status-muted" id="run-status">待机 · 0 次</span>
+          </div>
+          <div class="view-toolbar">
+            <div class="view-group" role="group" aria-label="预设视角">
+              <button class="view-button is-active" type="button" data-view="iso">等轴测</button>
+              <button class="view-button" type="button" data-view="front">正视</button>
+              <button class="view-button" type="button" data-view="top">俯视</button>
+            </div>
+            <button class="reset-button" id="reset-view" type="button" title="恢复默认等轴测视角">
+              <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4.1 7.2A6.5 6.5 0 1 1 3.8 12"/><path d="M4.1 3.5v3.9H8"/></svg>
+              <span>复位</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="stage-bottom">
+          <div class="interaction-hint">
+            <span>左键旋转</span><i></i><span>右键平移</span><i></i><span>滚轮缩放</span><i></i><span>单击选择 / 操作按钮</span>
+          </div>
+          <div class="stage-scale">SCALE 1u ≈ 100 mm · PLC I/O SIMULATION</div>
+        </div>
+
+        <div class="hover-tip" id="hover-tip" role="status"></div>
+
+        <div class="stage-loading" id="stage-loading">
+          <span class="loading-line"></span>
+          <span>构建三维结构模型与 PLC 仿真…</span>
+        </div>
+
+        <div class="fatal-error" id="fatal-error" hidden>
+          <div class="error-card" role="alert">
+            <div class="error-code" id="error-code">RUNTIME ERROR</div>
+            <h2 id="error-title">三维模型无法启动</h2>
+            <p id="error-message">请检查浏览器设置后重新加载。</p>
+            <button type="button" onclick="window.location.reload()">重新加载页面</button>
+          </div>
+        </div>
+      </section>
+
+      <aside class="inspector" aria-label="PLC 运行控制、零部件说明与显示控制">
+        <div class="inspector-scroll">
+          <section class="panel-section sim-panel-section" aria-label="PLC 自动往返运行控制">
+            <div class="sim-card" id="sim-card" data-phase="idle">
+              <div class="sim-head">
+                <div>
+                  <div class="eyebrow">PLC RUN / AUTO RECIPROCATING</div>
+                  <h2>运行控制</h2>
+                </div>
+                <div class="sim-live" role="status" aria-live="polite">
+                  <span class="sim-live-dot"></span>
+                  <span id="sim-state">待机</span>
+                </div>
+              </div>
+
+              <div class="sim-main">
+                <div class="sim-counter">
+                  <span>往返计数</span>
+                  <div class="sim-counter-value"><strong id="cycle-count" aria-live="polite">00</strong><small>次</small></div>
+                  <span class="sim-counter-note">SQ2 左端返回计数</span>
+                </div>
+                <div class="sim-actions">
+                  <button class="sim-button sim-button--start" id="sim-start" type="button">启动</button>
+                  <button class="sim-button sim-button--stop" id="sim-stop" type="button" disabled>停止</button>
+                  <button class="sim-button sim-button--reset" id="sim-reset" type="button">计数清零</button>
+                </div>
+              </div>
+
+              <div class="sim-io" role="group" aria-label="PLC 输入输出状态">
+                <span class="io-chip" data-io="SB1" id="io-sb1"><i class="io-led"></i>SB1 启动</span>
+                <span class="io-chip" data-io="SB2" id="io-sb2"><i class="io-led"></i>SB2 停止</span>
+                <span class="io-chip" data-io="SQ2" id="io-sq2"><i class="io-led"></i>SQ2 左端</span>
+                <span class="io-chip" data-io="SQ1" id="io-sq1"><i class="io-led"></i>SQ1 右端</span>
+                <span class="io-chip" data-io="KM1" id="io-km1"><i class="io-led"></i>KM1 正转</span>
+                <span class="io-chip" data-io="KM2" id="io-km2"><i class="io-led"></i>KM2 反转</span>
+              </div>
+
+              <div class="sim-lower">
+                <label class="sim-speed" for="sim-speed-input">速度
+                  <input id="sim-speed-input" type="range" min="0.6" max="2.0" step="0.1" value="1" />
+                  <output id="sim-speed-value" for="sim-speed-input">1.0×</output>
+                </label>
+                <span class="sim-scan">PLC RUN · SIM</span>
+              </div>
+
+              <p class="sim-note"><strong>控制顺序：</strong>启动 → KM1 正转 → SQ1 右端换向 → KM2 反转 → SQ2 左端计数并再次换向。停止按钮切断 KM1/KM2，台车减速停稳。</p>
+            </div>
+          </section>
+
+          <section class="panel-section">
+            <div class="eyebrow">INSPECTOR / 运行与结构说明</div>
+            <div class="info-card" id="info-card" style="margin-top:8px">
+              <div id="overall-card">
+                <div class="card-kicker"><span class="dot"></span>OVERALL ASSEMBLY · PLC SIM</div>
+                <h2>台车自动往返控制装置</h2>
+                <p class="info-desc">启动仿真后，台车在 SQ2 与 SQ1 之间自动往返。SQ1 触发右端换向，SQ2 触发左端换向并计一次完整往返；停止按钮切断 KM1/KM2，台车按减速曲线停稳。下方仍可查看静态结构、零部件拆分和标注。</p>
+                <div class="overall-chips">
+                  <span class="overall-chip">自动往返</span>
+                  <span class="overall-chip">KM1 / KM2 互锁</span>
+                  <span class="overall-chip">SQ1 / SQ2 换向</span>
+                  <span class="overall-chip">往返计数</span>
+                </div>
+              </div>
+              <div id="selection-card" hidden>
+                <div class="card-kicker"><span class="dot" id="selection-dot"></span><span id="selection-kicker">SELECTED GROUP</span></div>
+                <h2><span id="selection-name">底座</span><span class="inline-code" id="selection-code">BASE</span></h2>
+                <p class="info-desc" id="selection-desc"></p>
+                <dl class="info-facts">
+                  <div><dt>所属模型组</dt><dd id="selection-group"></dd></div>
+                  <div><dt>结构关系</dt><dd id="selection-assembly"></dd></div>
+                </dl>
+                <div class="info-actions">
+                  <button class="action-button is-primary" id="isolate-button" type="button">单独查看</button>
+                  <button class="action-button" id="cancel-selection" type="button">取消选择</button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel-section">
+            <div class="section-heading">
+              <div><div class="eyebrow">VISIBILITY / VIEW</div><h2>显示与查看</h2></div>
+            </div>
+            <div class="control-grid">
+              <button class="control-button span-2" id="show-all" type="button">
+                <span>显示全部部件</span><span class="state">RESTORE</span>
+              </button>
+              <button class="control-button" id="door-toggle" type="button" aria-pressed="true">
+                <span>控制柜柜门</span><span class="state" id="door-state">已打开</span>
+              </button>
+              <button class="control-button" id="labels-toggle" type="button" aria-pressed="true">
+                <span>显示标注</span><span class="state" id="labels-state">开</span>
+              </button>
+              <button class="control-button" id="guides-toggle" type="button" aria-pressed="true">
+                <span>装配引导线</span><span class="state" id="guides-state">开</span>
+              </button>
+              <button class="control-button" id="reset-view-2" type="button">
+                <span>恢复整体视角</span><span class="state">ISO</span>
+              </button>
+            </div>
+            <div class="isolate-status" id="isolate-status" hidden>
+              <span id="isolate-text"></span>
+              <button type="button" id="exit-isolate">退出</button>
+            </div>
+          </section>
+
+          <section class="panel-section">
+            <div class="section-heading">
+              <div><div class="eyebrow">MODEL GROUPS</div><h2>模型组</h2></div>
+              <span class="section-count">15 GROUPS</span>
+            </div>
+            <div class="part-list" id="part-list"></div>
+          </section>
+
+          <section class="panel-section">
+            <div class="section-heading">
+              <div><div class="eyebrow">ASSEMBLY RELATIONS</div><h2>装配关系</h2></div>
+            </div>
+            <ol class="assembly-list">
+              <li><p><strong>车轮与导轨：</strong>四个车轮分成前后两组，压在两条导轨顶面；轮缘卡在导轨内侧，车架通过前后轮轴支承。</p></li>
+              <li><p><strong>电动机与传动：</strong>电动机安装在台车车架下方，输出端经联轴器、减速箱、传动轴和链传动连接前轮轴。</p></li>
+              <li><p><strong>限位开关位置：</strong>SQ2 位于左端原点，SQ1 位于右端前限，两者都用支架固定在导轨端部的底座上。</p></li>
+              <li><p><strong>触发挡片：</strong>台车两端设有限位触发挡片，与端部滚轮摆臂高度对应；仿真中挡片到达端点后压下滚轮，PLC 读取 SQ1/SQ2 并切换运行方向。</p></li>
+              <li><p><strong>控制柜内部：</strong>PLC 位于柜内上部，KM1、KM2 并排装在下方安装板上；运行时对应接触器指示灯随输出亮起，柜门打开后可清楚查看。</p></li>
+              <li><p><strong>按钮位置：</strong>启动、停止按钮安装在控制柜右侧按钮盒上，绿色为启动、红色为停止；点击模型按钮或右侧运行控制均可启动/停止仿真。</p></li>
+            </ol>
+          </section>
+        </div>
+        <footer class="inspector-footer">
+          <span>Three.js r149 · CDN 加载需联网</span>
+          <span>PLC RUN SIM</span>
+        </footer>
+      </aside>
+    </main>
+  </div>
+
+  <script
+    src="https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.min.js"
+    onerror="window.__THREE_LOAD_ERROR__ = true;"></script>
+  <script>
+    (function () {
+      "use strict";
+
+      /* =====================================================================
+         应用初始化、错误处理
+         ===================================================================== */
+      const stage = document.getElementById("stage");
+      const canvas = document.getElementById("viewport");
+      const loading = document.getElementById("stage-loading");
+      const errorPanel = document.getElementById("fatal-error");
+
+      function showFatalError(code, title, message) {
+        document.getElementById("error-code").textContent = code;
+        document.getElementById("error-title").textContent = title;
+        document.getElementById("error-message").textContent = message;
+        errorPanel.hidden = false;
+        loading.classList.add("is-hidden");
+      }
+
+      if (window.__THREE_LOAD_ERROR__ || !window.THREE) {
+        showFatalError(
+          "THREE.JS CDN ERROR",
+          "Three.js 资源加载失败",
+          "本页面通过 CDN 加载固定版本 Three.js r149，运行时需要联网。请检查网络连接、代理或 CDN 访问权限后刷新页面。"
+        );
+        return;
+      }
+
+      let renderer;
+      try {
+        renderer = new THREE.WebGLRenderer({
+          canvas: canvas,
+          antialias: true,
+          alpha: true,
+          preserveDrawingBuffer: true,
+          powerPreference: "high-performance"
+        });
+        if (!renderer.getContext()) throw new Error("WebGL context unavailable");
+      } catch (err) {
+        showFatalError(
+          "WEBGL UNAVAILABLE",
+          "当前浏览器无法创建 WebGL 场景",
+          "请使用支持 WebGL 的现代浏览器，并确认硬件加速已开启。错误信息：" + (err && err.message ? err.message : "未知错误")
+        );
+        return;
+      }
+
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      renderer.outputEncoding = THREE.sRGBEncoding;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.08;
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      renderer.setClearColor(0x000000, 0);
+
+      /* =====================================================================
+         基础场景
+         ===================================================================== */
+      const scene = new THREE.Scene();
+      scene.fog = new THREE.Fog(0xdbe4e6, 28, 72);
+
+      const camera = new THREE.PerspectiveCamera(36, 1, 0.1, 160);
+      camera.up.set(0, 1, 0);
+
+      const modelRoot = new THREE.Group();
+      modelRoot.name = "MODEL_ROOT";
+      scene.add(modelRoot);
+
+      const guideRoot = new THREE.Group();
+      guideRoot.name = "GUIDE_ROOT";
+      modelRoot.add(guideRoot);
+
+      const ambient = new THREE.HemisphereLight(0xf8fdff, 0x9aaaae, 0.85);
+      scene.add(ambient);
+
+      const ambientFill = new THREE.AmbientLight(0xffffff, 0.16);
+      scene.add(ambientFill);
+
+      const keyLight = new THREE.DirectionalLight(0xfff7e8, 1.55);
+      keyLight.position.set(-8.5, 13.5, 9.5);
+      keyLight.castShadow = true;
+      keyLight.shadow.mapSize.set(2048, 2048);
+      keyLight.shadow.camera.left = -12;
+      keyLight.shadow.camera.right = 12;
+      keyLight.shadow.camera.top = 12;
+      keyLight.shadow.camera.bottom = -10;
+      keyLight.shadow.camera.near = 0.5;
+      keyLight.shadow.camera.far = 42;
+      keyLight.shadow.bias = -0.00035;
+      keyLight.shadow.normalBias = 0.025;
+      keyLight.target.position.set(0, 0.8, -0.3);
+      scene.add(keyLight);
+      scene.add(keyLight.target);
+
+      const fillLight = new THREE.DirectionalLight(0xbcd9e5, 0.52);
+      fillLight.position.set(10, 7, -8);
+      scene.add(fillLight);
+
+      const frontFill = new THREE.DirectionalLight(0xf1f6f7, 0.34);
+      frontFill.position.set(8, 5.5, 12);
+      scene.add(frontFill);
+
+      const rimLight = new THREE.DirectionalLight(0xffd8a3, 0.32);
+      rimLight.position.set(-3, 6, -11);
+      scene.add(rimLight);
+
+      function addGround() {
+        const groundMat = new THREE.MeshStandardMaterial({
+          color: 0xe4eaeb,
+          roughness: 0.96,
+          metalness: 0.02
+        });
+        const ground = new THREE.Mesh(new THREE.PlaneGeometry(95, 95), groundMat);
+        ground.rotation.x = -Math.PI / 2;
+        ground.position.y = -0.035;
+        ground.receiveShadow = true;
+        ground.name = "GROUND";
+        scene.add(ground);
+
+        const grid = new THREE.GridHelper(56, 56, 0x8da0a8, 0xc4d1d5);
+        grid.position.y = 0.005;
+        grid.material.transparent = true;
+        grid.material.opacity = 0.2;
+        grid.material.depthWrite = false;
+        grid.name = "GROUND_GRID";
+        scene.add(grid);
+      }
+      addGround();
+
+      /* =====================================================================
+         通用几何辅助
+         ===================================================================== */
+      const EDGE_MAT = new THREE.LineBasicMaterial({
+        color: 0x263a43,
+        transparent: true,
+        opacity: 0.22,
+        depthWrite: false
+      });
+
+      const MAT = {
+        baseFrame: new THREE.MeshStandardMaterial({ color: 0x344a54, roughness: 0.5, metalness: 0.48 }),
+        baseDeck: new THREE.MeshStandardMaterial({ color: 0x5d727c, roughness: 0.6, metalness: 0.35 }),
+        baseDark: new THREE.MeshStandardMaterial({ color: 0x253b44, roughness: 0.55, metalness: 0.42 }),
+        railPlate: new THREE.MeshStandardMaterial({ color: 0x7d9099, roughness: 0.42, metalness: 0.48 }),
+        rail: new THREE.MeshStandardMaterial({ color: 0xb8c5ca, roughness: 0.34, metalness: 0.58 }),
+        railHead: new THREE.MeshStandardMaterial({ color: 0xd6e0e3, roughness: 0.27, metalness: 0.66 }),
+        steel: new THREE.MeshStandardMaterial({ color: 0x98a8ad, roughness: 0.34, metalness: 0.58 }),
+        darkSteel: new THREE.MeshStandardMaterial({ color: 0x3a4c53, roughness: 0.4, metalness: 0.62 }),
+        black: new THREE.MeshStandardMaterial({ color: 0x1f2b30, roughness: 0.6, metalness: 0.3 }),
+        rubber: new THREE.MeshStandardMaterial({ color: 0x222c30, roughness: 0.82, metalness: 0.04 }),
+        trolley: new THREE.MeshStandardMaterial({ color: 0xc9982e, roughness: 0.42, metalness: 0.36 }),
+        trolleyDark: new THREE.MeshStandardMaterial({ color: 0x8e6814, roughness: 0.5, metalness: 0.38 }),
+        deck: new THREE.MeshStandardMaterial({ color: 0x5c6f77, roughness: 0.6, metalness: 0.3 }),
+        deckTop: new THREE.MeshStandardMaterial({ color: 0x788b91, roughness: 0.52, metalness: 0.45 }),
+        deckRidge: new THREE.MeshStandardMaterial({ color: 0x98a8ad, roughness: 0.4, metalness: 0.55 }),
+        wheel: new THREE.MeshStandardMaterial({ color: 0x404e54, roughness: 0.36, metalness: 0.68 }),
+        wheelRim: new THREE.MeshStandardMaterial({ color: 0x9babb0, roughness: 0.26, metalness: 0.8 }),
+        hub: new THREE.MeshStandardMaterial({ color: 0xc39022, roughness: 0.36, metalness: 0.58 }),
+        motor: new THREE.MeshStandardMaterial({ color: 0x2f686b, roughness: 0.38, metalness: 0.5 }),
+        motorDark: new THREE.MeshStandardMaterial({ color: 0x254c50, roughness: 0.44, metalness: 0.46 }),
+        motorCap: new THREE.MeshStandardMaterial({ color: 0x7f9298, roughness: 0.3, metalness: 0.72 }),
+        gearbox: new THREE.MeshStandardMaterial({ color: 0x667a82, roughness: 0.38, metalness: 0.58 }),
+        chain: new THREE.MeshStandardMaterial({ color: 0x3b484d, roughness: 0.34, metalness: 0.75 }),
+        switchBody: new THREE.MeshStandardMaterial({ color: 0xd26034, roughness: 0.48, metalness: 0.18 }),
+        switchDark: new THREE.MeshStandardMaterial({ color: 0x2d3b40, roughness: 0.5, metalness: 0.32 }),
+        switchMetal: new THREE.MeshStandardMaterial({ color: 0xa9b8bd, roughness: 0.26, metalness: 0.8 }),
+        cabinet: new THREE.MeshStandardMaterial({ color: 0xc3ccc8, roughness: 0.53, metalness: 0.25 }),
+        cabinetEdge: new THREE.MeshStandardMaterial({ color: 0x53666d, roughness: 0.44, metalness: 0.42 }),
+        cabinetDark: new THREE.MeshStandardMaterial({ color: 0x344850, roughness: 0.46, metalness: 0.42 }),
+        cabinetInner: new THREE.MeshStandardMaterial({ color: 0x94a19f, roughness: 0.72, metalness: 0.15 }),
+        cabinetPanel: new THREE.MeshStandardMaterial({ color: 0x7c8d8d, roughness: 0.66, metalness: 0.23 }),
+        plcBody: new THREE.MeshStandardMaterial({ color: 0x263338, roughness: 0.5, metalness: 0.32 }),
+        plcTerminal: new THREE.MeshStandardMaterial({ color: 0x6f9867, roughness: 0.54, metalness: 0.14 }),
+        plcLight: new THREE.MeshStandardMaterial({ color: 0x88cf79, emissive: 0x3f8b36, emissiveIntensity: 0.75, roughness: 0.35 }),
+        contactor: new THREE.MeshStandardMaterial({ color: 0xd9ddd7, roughness: 0.56, metalness: 0.13 }),
+        contactorDark: new THREE.MeshStandardMaterial({ color: 0x34454c, roughness: 0.46, metalness: 0.35 }),
+        contactorBlue: new THREE.MeshStandardMaterial({ color: 0x477fa2, roughness: 0.5, metalness: 0.18 }),
+        contactorAmber: new THREE.MeshStandardMaterial({ color: 0xc18a21, roughness: 0.5, metalness: 0.2 }),
+        buttonGreen: new THREE.MeshStandardMaterial({ color: 0x3d9e65, roughness: 0.32, metalness: 0.23, emissive: 0x0d2d1a, emissiveIntensity: 0.45 }),
+        buttonRed: new THREE.MeshStandardMaterial({ color: 0xc64a3c, roughness: 0.34, metalness: 0.23, emissive: 0x300c08, emissiveIntensity: 0.4 }),
+        buttonRing: new THREE.MeshStandardMaterial({ color: 0x8e9ca0, roughness: 0.32, metalness: 0.65 }),
+        arrow: new THREE.MeshStandardMaterial({ color: 0xd7a02c, roughness: 0.42, metalness: 0.26 }),
+        guideMarker: new THREE.MeshBasicMaterial({ color: 0xd09a27, transparent: true, opacity: 0.8, depthWrite: false })
+      };
+
+      function addBox(parent, size, pos, material, opts) {
+        opts = opts || {};
+        const geo = new THREE.BoxGeometry(size[0], size[1], size[2]);
+        const mesh = new THREE.Mesh(geo, material);
+        mesh.position.set(pos[0], pos[1], pos[2]);
+        if (opts.rotation) mesh.rotation.set(opts.rotation[0] || 0, opts.rotation[1] || 0, opts.rotation[2] || 0);
+        mesh.castShadow = opts.castShadow !== false;
+        mesh.receiveShadow = opts.receiveShadow !== false;
+        parent.add(mesh);
+        if (opts.edges) {
+          const edges = new THREE.LineSegments(new THREE.EdgesGeometry(geo), EDGE_MAT);
+          edges.position.copy(mesh.position);
+          edges.rotation.copy(mesh.rotation);
+          edges.scale.copy(mesh.scale);
+          parent.add(edges);
+        }
+        return mesh;
+      }
+
+      function addCylinder(parent, radiusTop, radiusBottom, height, segments, pos, material, opts) {
+        opts = opts || {};
+        const geo = new THREE.CylinderGeometry(radiusTop, radiusBottom, height, segments);
+        const mesh = new THREE.Mesh(geo, material);
+        mesh.position.set(pos[0], pos[1], pos[2]);
+        if (opts.axis === "x") mesh.rotation.z = Math.PI / 2;
+        else if (opts.axis === "z") mesh.rotation.x = Math.PI / 2;
+        if (opts.rotation) mesh.rotation.set(opts.rotation[0] || 0, opts.rotation[1] || 0, opts.rotation[2] || 0);
+        mesh.castShadow = opts.castShadow !== false;
+        mesh.receiveShadow = opts.receiveShadow !== false;
+        parent.add(mesh);
+        return mesh;
+      }
+
+      function addTorus(parent, radius, tube, radialSegments, tubularSegments, pos, material, opts) {
+        opts = opts || {};
+        const geo = new THREE.TorusGeometry(radius, tube, radialSegments, tubularSegments);
+        const mesh = new THREE.Mesh(geo, material);
+        mesh.position.set(pos[0], pos[1], pos[2]);
+        if (opts.rotation) mesh.rotation.set(opts.rotation[0] || 0, opts.rotation[1] || 0, opts.rotation[2] || 0);
+        mesh.castShadow = opts.castShadow !== false;
+        mesh.receiveShadow = opts.receiveShadow !== false;
+        parent.add(mesh);
+        return mesh;
+      }
+
+      function addBolt(parent, x, y, z, material, opts) {
+        opts = opts || {};
+        const r = opts.radius || 0.045;
+        const h = opts.height || 0.025;
+        const axis = opts.axis || "y";
+        const bolt = addCylinder(parent, r, r, h, 6, [x, y, z], material || MAT.steel, { axis: axis, castShadow: false });
+        return bolt;
+      }
+
+      function createGroup(name) {
+        const g = new THREE.Group();
+        g.name = name;
+        return g;
+      }
+
+      function addCone(parent, radius, height, pos, material, rotation) {
+        const mesh = new THREE.Mesh(new THREE.ConeGeometry(radius, height, 20), material);
+        mesh.position.set(pos[0], pos[1], pos[2]);
+        if (rotation) mesh.rotation.set(rotation[0] || 0, rotation[1] || 0, rotation[2] || 0);
+        mesh.castShadow = false;
+        mesh.receiveShadow = false;
+        parent.add(mesh);
+        return mesh;
+      }
+
+      /* =====================================================================
+         可调模型参数
+         说明：1 个场景单位约等于 100 mm；以下尺寸与拆分偏移均可直接调整。
+         ===================================================================== */
+      const CONFIG = {
+        modelScale: 1.0,
+        base: {
+          length: 11.2,
+          width: 3.8,
+          deckTop: 0.42
+        },
+        rail: {
+          length: 10.6,
+          gauge: 2.0,
+          topY: 0.72
+        },
+        wheel: {
+          x: 0.82,
+          z: 1.0,
+          y: 1.0,
+          radius: 0.28,
+          width: 0.20
+        },
+        trolley: {
+          frameBottom: 1.34,
+          frameTop: 1.54,
+          deckTop: 1.70,
+          width: 2.56,
+          depth: 2.72
+        },
+        motor: {
+          x: -0.42,
+          y: 0.99,
+          z: -0.40
+        },
+        drive: {
+          planeZ: 1.36,
+          outputX: -0.42,
+          axleX: 0.82,
+          sprocketRadius: 0.185
+        },
+        limit: {
+          x: 4.86,
+          z: 1.47
+        },
+        cabinet: {
+          x: 4.15,
+          z: -3.15,
+          width: 2.50,
+          depth: 1.05,
+          frontZ: -2.625,
+          backZ: -3.675,
+          frontRightX: 5.40
+        },
+        cabinetDoor: {
+          hingeX: 2.97,
+          hingeY: 1.40,
+          hingeZ: -2.615,
+          /* 柜门向控制柜背侧打开，避开台车运行通道。 */
+          openAngle: 1.66
+        },
+        arrow: {
+          z: 2.22,
+          halfLength: 4.15
+        },
+        explode: {
+          railLeft: new THREE.Vector3(0, 0.48, -0.32),
+          railRight: new THREE.Vector3(0, 0.48, 0.32),
+          trolley: new THREE.Vector3(0, 1.72, 0),
+          wheels: new THREE.Vector3(0, 0.82, 0.28),
+          motor: new THREE.Vector3(-1.65, 0.72, -1.05),
+          transmission: new THREE.Vector3(0, 1.15, 1.62),
+          sq2: new THREE.Vector3(-0.65, 0.48, 0.32),
+          sq1: new THREE.Vector3(0.65, 0.48, 0.32),
+          cabinet: new THREE.Vector3(0, 0.28, -1.0)
+        }
+      };
+
+      modelRoot.scale.setScalar(CONFIG.modelScale);
+
+      const PART_ORDER = [
+        "base",
+        "rails",
+        "trolley",
+        "wheels",
+        "motor",
+        "transmission",
+        "sq2",
+        "sq1",
+        "cabinet",
+        "door",
+        "plc",
+        "km1",
+        "km2",
+        "startButton",
+        "stopButton"
+      ];
+
+      const PART_INFO = {
+        base: {
+          index: "01",
+          name: "底座",
+          code: "BASE",
+          tag: "承载基础",
+          color: "#657a85",
+          description: "矩形钢制底座由纵梁、横筋、端板和支承脚组成，为导轨、限位开关与控制柜提供统一安装基准。",
+          assembly: "落地支承；上平面安装两条平行导轨，后侧承载控制柜。"
+        },
+        rails: {
+          index: "02",
+          name: "导轨组",
+          code: "RAIL-L/R",
+          tag: "导向",
+          color: "#90a2a9",
+          description: "两条平行导轨沿台车运行方向布置，轨底压板固定在底座上，为四个车轮提供直线导向和承载面。",
+          assembly: "与底座上平面连接，轨距对应车轮中心距；两端留出 SQ2、SQ1 的安装位置。"
+        },
+        trolley: {
+          index: "03",
+          name: "台车车架与载物平台",
+          code: "TROLLEY",
+          tag: "运动载体",
+          color: "#d59b27",
+          description: "车架由两根纵向梁、横梁和载物平台组成，四角轴承座与车轮轴连接；端部设有限位触发挡片，仿真中沿导轨往返。",
+          assembly: "位于导轨上方，车架下方悬挂电动机和传动机构；两端挡片与 SQ1、SQ2 的滚轮高度对应。"
+        },
+        wheels: {
+          index: "04",
+          name: "车轮组",
+          code: "WHEEL×4",
+          tag: "行走",
+          color: "#586d76",
+          description: "四个带轮缘的车轮分成前后两组，前后各由一根车轴连接；仿真运行时车轮随台车位移同步旋转。",
+          assembly: "车轮压在两条导轨顶面，轮缘进入导轨内侧；车轴由台车车架轴承座支承。"
+        },
+        motor: {
+          index: "05",
+          name: "驱动电动机",
+          code: "M",
+          tag: "驱动",
+          color: "#2f686b",
+          description: "驱动电动机悬挂在台车车架下方，具有外壳、端盖、散热筋、风罩、接线盒和安装吊架。",
+          assembly: "电动机安装在台车底部，输出轴通过联轴器接入传动机构的减速箱；运行时随台车一起移动。"
+        },
+        transmission: {
+          index: "06",
+          name: "传动机构",
+          code: "CHAIN DRIVE",
+          tag: "传动",
+          color: "#8a6b27",
+          description: "传动机构由联轴器、减速箱、输出轴、链轮和链条组成，把电动机动力传至前轮轴。",
+          assembly: "减速箱连接电动机输出端；链条跨接减速箱输出链轮与前轮轴链轮，主要连接关系保持可见。"
+        },
+        sq2: {
+          index: "07",
+          name: "左端原点限位",
+          code: "SQ2",
+          tag: "检测",
+          color: "#d46434",
+          description: "SQ2 是左端原点限位开关，包含安装底座、开关盒和滚轮摆臂；仿真中台车回到左端时由挡片压下，作为换向和计数信号。",
+          assembly: "用支架固定在导轨左端外侧的底座上，滚轮摆臂朝向台车左端触发挡片。"
+        },
+        sq1: {
+          index: "08",
+          name: "右端前限位",
+          code: "SQ1",
+          tag: "检测",
+          color: "#d46434",
+          description: "SQ1 是右端前限位开关，结构与 SQ2 相同；仿真中台车到达右端时由挡片压下，作为反转换向信号。",
+          assembly: "用支架固定在导轨右端外侧的底座上，滚轮摆臂朝向台车右端触发挡片。"
+        },
+        cabinet: {
+          index: "09",
+          name: "控制柜柜体",
+          code: "CABINET",
+          tag: "电气",
+          color: "#4b7187",
+          description: "简化控制柜柜体包含底座、侧板、背板、顶板、柜内安装板、DIN 导轨、线槽和右侧按钮盒。",
+          assembly: "布置在导轨后侧，不遮挡台车与两端限位；柜门通过左侧铰链开合。"
+        },
+        door: {
+          index: "10",
+          name: "柜门",
+          code: "DOOR",
+          tag: "防护",
+          color: "#71868e",
+          description: "柜门带观察窗、把手和铰链，可打开查看柜内 PLC 与接触器；按钮位于柜体右侧，不随柜门移动。",
+          assembly: "铰接在控制柜右侧立柱上，打开后向柜体前方旋转。"
+        },
+        plc: {
+          index: "11",
+          name: "PLC",
+          code: "PLC",
+          tag: "控制",
+          color: "#4e7a56",
+          description: "PLC 为柜内上部模块，带上下端子排、状态指示灯和安装卡扣；仿真中扫描 SQ1、SQ2 输入并输出 KM1、KM2 控制信号。",
+          assembly: "安装在柜内上部的 DIN 导轨与安装板上。"
+        },
+        km1: {
+          index: "12",
+          name: "正转接触器",
+          code: "KM1",
+          tag: "电气",
+          color: "#477fa2",
+          description: "正转接触器 KM1 位于柜内下排左侧，包含触点模块、端子与线圈底座；正转运行时吸合，状态灯点亮。",
+          assembly: "安装在柜内下方安装板上，与 KM2 并排布置并保持电气互锁。"
+        },
+        km2: {
+          index: "13",
+          name: "反转接触器",
+          code: "KM2",
+          tag: "电气",
+          color: "#b47c1f",
+          description: "反转接触器 KM2 位于柜内下排右侧，结构与 KM1 相同；反转运行时吸合，状态灯点亮。",
+          assembly: "安装在柜内下方安装板上，与 KM1 并排布置并保持电气互锁。"
+        },
+        startButton: {
+          index: "14",
+          name: "启动按钮",
+          code: "START",
+          tag: "操作",
+          color: "#3d9e65",
+          description: "启动按钮采用绿色按钮帽，安装在控制柜右侧按钮盒上；点击按钮或右侧运行控制即可启动自动往返仿真。",
+          assembly: "按钮盒固定在控制柜右侧；绿色按钮帽朝外，仿真启动时按钮帽有按压反馈。"
+        },
+        stopButton: {
+          index: "15",
+          name: "停止按钮",
+          code: "STOP",
+          tag: "操作",
+          color: "#c64a3c",
+          description: "停止按钮采用红色按钮帽，位于启动按钮下方；点击后切断 KM1/KM2，台车减速停稳。",
+          assembly: "与启动按钮同装在控制柜右侧按钮盒上，红色按钮帽朝外，仿真停止时有按压反馈。"
+        }
+      };
+
+      MAT.glass = new THREE.MeshStandardMaterial({
+        color: 0xb7cbd0,
+        roughness: 0.18,
+        metalness: 0.12,
+        transparent: true,
+        opacity: 0.3,
+        depthWrite: false,
+        side: THREE.DoubleSide
+      });
+
+      MAT.guideMarkerEnd = new THREE.MeshBasicMaterial({
+        color: 0x2b7376,
+        transparent: true,
+        opacity: 0.75,
+        depthWrite: false,
+        depthTest: false
+      });
+
+      /* =====================================================================
+         建模辅助
+         ===================================================================== */
+      function buildBase() {
+        const g = createGroup("GROUP_底座_BASE");
+
+        addBox(g, [11.2, 0.20, 3.8], [0, 0.32, 0], MAT.baseDeck, { edges: true });
+        addBox(g, [11.3, 0.26, 0.28], [0, 0.18, 1.72], MAT.baseFrame, { edges: true });
+        addBox(g, [11.3, 0.26, 0.28], [0, 0.18, -1.72], MAT.baseFrame, { edges: true });
+        addBox(g, [0.12, 0.32, 3.2], [5.55, 0.26, 0], MAT.baseFrame, { edges: true });
+        addBox(g, [0.12, 0.32, 3.2], [-5.55, 0.26, 0], MAT.baseFrame, { edges: true });
+
+        [-4.3, -2.15, 0, 2.15, 4.3].forEach(function (x) {
+          addBox(g, [0.16, 0.18, 3.32], [x, 0.12, 0], MAT.baseDark, { edges: true });
+        });
+
+        [-5.15, 5.15].forEach(function (x) {
+          [-1.55, 1.55].forEach(function (z) {
+            addBox(g, [0.55, 0.08, 0.55], [x, 0.04, z], MAT.rubber, { edges: false });
+            addBox(g, [0.40, 0.14, 0.40], [x, 0.15, z], MAT.baseDark, { edges: true });
+          });
+        });
+
+        addBox(g, [10.65, 0.045, 0.022], [0, 0.403, 1.906], MAT.trolley, { edges: false, castShadow: false });
+
+        [-4.95, -3.2, 3.2, 4.95].forEach(function (x) {
+          [-1.52, 1.52].forEach(function (z) {
+            addBolt(g, x, 0.43, z, MAT.steel, { radius: 0.045, height: 0.025 });
+          });
+        });
+
+        addBox(g, [0.26, 0.06, 3.52], [0, 0.445, 0], MAT.baseFrame, { edges: false, castShadow: false });
+        return g;
+      }
+
+      function buildRailMesh(side) {
+        const g = createGroup(side < 0 ? "RAIL_LEFT" : "RAIL_RIGHT");
+        const length = CONFIG.rail.length;
+
+        addBox(g, [length, 0.05, 0.48], [0, 0.445, 0], MAT.railPlate, { edges: true });
+        addBox(g, [length, 0.18, 0.16], [0, 0.56, 0], MAT.rail, { edges: true });
+        addBox(g, [length, 0.07, 0.28], [0, 0.685, 0], MAT.railHead, { edges: true });
+        addBox(g, [length, 0.018, 0.20], [0, 0.729, 0], MAT.railHead, { edges: false, castShadow: false });
+
+        [-4.7, -2.82, -0.94, 0.94, 2.82, 4.7].forEach(function (x) {
+          addBox(g, [0.20, 0.035, 0.56], [x, 0.483, 0], MAT.darkSteel, { edges: true, castShadow: false });
+          addBolt(g, x, 0.507, 0.225, MAT.steel, { radius: 0.033, height: 0.024 });
+          addBolt(g, x, 0.507, -0.225, MAT.steel, { radius: 0.033, height: 0.024 });
+        });
+
+        addBox(g, [0.08, 0.12, 0.38], [length / 2 - 0.04, 0.61, 0], MAT.darkSteel, { edges: true });
+        addBox(g, [0.08, 0.12, 0.38], [-length / 2 + 0.04, 0.61, 0], MAT.darkSteel, { edges: true });
+        return g;
+      }
+
+      function buildWheels() {
+        const g = createGroup("GROUP_车轮组_WHEELS");
+        const wheel = CONFIG.wheel;
+        const spinGroups = [];
+
+        [-0.82, 0.82].forEach(function (x) {
+          addCylinder(g, 0.055, 0.055, 2.62, 18, [x, wheel.y, 0], MAT.steel, { axis: "z" });
+          [-1.30, 1.30].forEach(function (z) {
+            addCylinder(g, 0.085, 0.085, 0.07, 18, [x, wheel.y, z], MAT.darkSteel, { axis: "z" });
+          });
+
+          [-1, 1].forEach(function (side) {
+            const cz = side * wheel.z;
+            const wheelPivot = createGroup("WHEEL_SPIN_" + (side < 0 ? "L" : "R") + "_" + (x < 0 ? "A" : "B"));
+            wheelPivot.position.set(x, wheel.y, cz);
+            g.add(wheelPivot);
+            spinGroups.push(wheelPivot);
+
+            addCylinder(wheelPivot, wheel.radius, wheel.radius, wheel.width, 32, [0, 0, 0], MAT.wheel, { axis: "z" });
+            addCylinder(wheelPivot, 0.318, 0.318, 0.035, 32, [0, 0, -side * 0.115], MAT.wheelRim, { axis: "z" });
+            addCylinder(wheelPivot, 0.105, 0.105, 0.27, 18, [0, 0, 0], MAT.wheelRim, { axis: "z" });
+            addCylinder(wheelPivot, 0.092, 0.092, 0.035, 18, [0, 0, side * 0.145], MAT.hub, { axis: "z" });
+
+            for (let i = 0; i < 6; i += 1) {
+              const a = (i / 6) * Math.PI * 2;
+              addCylinder(
+                wheelPivot,
+                0.018,
+                0.018,
+                0.025,
+                8,
+                [Math.cos(a) * 0.168, Math.sin(a) * 0.168, side * 0.16],
+                MAT.steel,
+                { axis: "z", castShadow: false }
+              );
+            }
+          });
+        });
+
+        g.userData.spinGroups = spinGroups;
+        return g;
+      }
+
+      function buildTrolley() {
+        const g = createGroup("GROUP_台车_TROLLEY");
+        const sideZ = 1.28;
+
+        addBox(g, [2.55, 0.20, 0.16], [0, 1.44, sideZ], MAT.trolley, { edges: true });
+        addBox(g, [2.55, 0.20, 0.16], [0, 1.44, -sideZ], MAT.trolley, { edges: true });
+        addBox(g, [0.16, 0.20, 2.72], [1.18, 1.44, 0], MAT.trolley, { edges: true });
+        addBox(g, [0.16, 0.20, 2.72], [-1.18, 1.44, 0], MAT.trolley, { edges: true });
+        addBox(g, [0.12, 0.16, 2.62], [0, 1.45, 0], MAT.trolleyDark, { edges: true });
+
+        addBox(g, [2.58, 0.04, 2.83], [0, 1.56, 0], MAT.darkSteel, { edges: true });
+        addBox(g, [2.60, 0.12, 2.82], [0, 1.64, 0], MAT.deck, { edges: true });
+        addBox(g, [2.64, 0.04, 0.035], [0, 1.722, 1.41], MAT.darkSteel, { edges: true });
+        addBox(g, [2.64, 0.04, 0.035], [0, 1.722, -1.41], MAT.darkSteel, { edges: true });
+        addBox(g, [0.035, 0.04, 2.82], [1.31, 1.722, 0], MAT.darkSteel, { edges: true });
+        addBox(g, [0.035, 0.04, 2.82], [-1.31, 1.722, 0], MAT.darkSteel, { edges: true });
+
+        const ridgeGeometry = new THREE.BoxGeometry(0.105, 0.009, 0.022);
+        const ridgeCountX = 10;
+        const ridgeCountZ = 7;
+        const ridgeMesh = new THREE.InstancedMesh(ridgeGeometry, MAT.deckRidge, ridgeCountX * ridgeCountZ);
+        const ridgeDummy = new THREE.Object3D();
+        let ridgeIndex = 0;
+        for (let iz = 0; iz < ridgeCountZ; iz += 1) {
+          for (let ix = 0; ix < ridgeCountX; ix += 1) {
+            ridgeDummy.position.set(
+              -1.0 + ix * 0.222 + (iz % 2 ? 0.05 : 0),
+              1.706,
+              -1.08 + iz * 0.36
+            );
+            ridgeDummy.rotation.set(0, (ix + iz) % 2 === 0 ? Math.PI / 4 : -Math.PI / 4, 0);
+            ridgeDummy.updateMatrix();
+            ridgeMesh.setMatrixAt(ridgeIndex, ridgeDummy.matrix);
+            ridgeIndex += 1;
+          }
+        }
+        ridgeMesh.castShadow = false;
+        ridgeMesh.receiveShadow = true;
+        g.add(ridgeMesh);
+
+        [-1.08, 1.08].forEach(function (x) {
+          [-1.10, 1.10].forEach(function (z) {
+            addBox(g, [0.22, 0.035, 0.22], [x, 1.70, z], MAT.darkSteel, { edges: true, castShadow: false });
+            addBolt(g, x, 1.713, z, MAT.steel, { radius: 0.032, height: 0.022 });
+          });
+        });
+
+        [
+          [-0.82, 1.18, 1.19], [0.82, 1.18, 1.19],
+          [-0.82, 1.18, -1.19], [0.82, 1.18, -1.19]
+        ].forEach(function (p) {
+          addBox(g, [0.22, 0.32, 0.14], p, MAT.darkSteel, { edges: true });
+          addCylinder(g, 0.105, 0.105, 0.10, 20, [p[0], 1.00, p[2] * 0.99], MAT.darkSteel, { axis: "z" });
+          addBolt(g, p[0] + 0.07, 1.26, p[2] + 0.075, MAT.steel, { radius: 0.025, height: 0.025 });
+        });
+
+        [-1.13, 1.13].forEach(function (x) {
+          addBox(g, [0.22, 0.25, 0.04], [x, 1.19, 1.405], MAT.switchBody, { edges: true });
+          addBox(g, [0.10, 0.13, 0.10], [x, 1.315, 1.37], MAT.trolleyDark, { edges: true });
+          addBox(g, [0.16, 0.06, 0.31], [x, 1.065, 1.51], MAT.switchBody, { edges: true });
+          addBolt(g, x, 1.19, 1.43, MAT.darkSteel, { axis: "z", radius: 0.027, height: 0.018 });
+        });
+
+        [-0.62, -0.02].forEach(function (z) {
+          addBox(g, [0.92, 0.09, 0.11], [CONFIG.motor.x, 1.315, z], MAT.darkSteel, { edges: true });
+        });
+
+        [-1.2, 1.2].forEach(function (x) {
+          [-1.24, 1.24].forEach(function (z) {
+            addBolt(g, x, 1.736, z, MAT.steel, { radius: 0.035, height: 0.023 });
+          });
+        });
+
+        return g;
+      }
+
+      function buildMotor() {
+        const g = createGroup("GROUP_电动机_MOTOR");
+        const mx = CONFIG.motor.x;
+        const my = CONFIG.motor.y;
+        const mz = CONFIG.motor.z;
+
+        addCylinder(g, 0.24, 0.24, 0.78, 32, [mx, my, mz], MAT.motor, { axis: "z" });
+        [-0.72, -0.62, -0.52, -0.42, -0.32, -0.22, -0.12].forEach(function (z) {
+          addTorus(g, 0.246, 0.012, 8, 32, [mx, my, z], MAT.motorDark, { castShadow: false });
+        });
+
+        addCylinder(g, 0.225, 0.225, 0.04, 28, [mx, my, -0.795], MAT.motorCap, { axis: "z" });
+        addCylinder(g, 0.245, 0.245, 0.14, 28, [mx, my, -0.885], MAT.motorDark, { axis: "z" });
+        addTorus(g, 0.20, 0.014, 8, 28, [mx, my, -0.958], MAT.motorCap, { castShadow: false });
+        for (let i = 0; i < 8; i += 1) {
+          const a = (i / 8) * Math.PI * 2;
+          addBox(
+            g,
+            [0.035, 0.12, 0.035],
+            [mx + Math.cos(a) * 0.16, my + Math.sin(a) * 0.16, -0.955],
+            MAT.motorCap,
+            { rotation: [0, 0, a], edges: false, castShadow: false }
+          );
+        }
+
+        addCylinder(g, 0.225, 0.225, 0.045, 28, [mx, my, -0.008], MAT.motorCap, { axis: "z" });
+        addCylinder(g, 0.055, 0.055, 0.19, 16, [mx, my, 0.085], MAT.steel, { axis: "z" });
+
+        addBox(g, [0.24, 0.12, 0.26], [mx, my + 0.28, mz - 0.05], MAT.motorDark, { edges: true });
+        addCylinder(g, 0.035, 0.035, 0.07, 12, [mx, my + 0.365, mz - 0.05], MAT.steel, { axis: "y" });
+
+        [-0.62, -0.10].forEach(function (z) {
+          addTorus(g, 0.253, 0.017, 8, 32, [mx, my, z], MAT.darkSteel, { castShadow: false });
+          addBox(g, [0.075, 0.34, 0.08], [mx, my + 0.40, z], MAT.darkSteel, { edges: true });
+          addBox(g, [0.30, 0.045, 0.15], [mx, 1.575, z], MAT.darkSteel, { edges: true });
+        });
+
+        return g;
+      }
+
+      function buildSprocket(parent, x, y, z, radius, teeth, material) {
+        addCylinder(parent, radius, radius, 0.06, 28, [x, y, z], material, { axis: "z" });
+        addCylinder(parent, 0.058, 0.058, 0.095, 16, [x, y, z], MAT.steel, { axis: "z" });
+        for (let i = 0; i < teeth; i += 1) {
+          const a = (i / teeth) * Math.PI * 2;
+          addBox(
+            parent,
+            [0.045, 0.055, 0.058],
+            [x + Math.cos(a) * (radius + 0.018), y + Math.sin(a) * (radius + 0.018), z],
+            material,
+            { rotation: [0, 0, a], edges: false, castShadow: false }
+          );
+        }
+      }
+
+      function createStadiumCurve(x1, x2, y, z, radius) {
+        const points = [];
+        const topCount = 12;
+        const arcCount = 18;
+
+        for (let i = 0; i <= topCount; i += 1) {
+          points.push(new THREE.Vector3(x1 + ((x2 - x1) * i) / topCount, y + radius, z));
+        }
+        for (let i = 1; i < arcCount; i += 1) {
+          const a = Math.PI / 2 - (Math.PI * i) / arcCount;
+          points.push(new THREE.Vector3(x2 + Math.cos(a) * radius, y + Math.sin(a) * radius, z));
+        }
+        for (let i = 0; i <= topCount; i += 1) {
+          points.push(new THREE.Vector3(x2 - ((x2 - x1) * i) / topCount, y - radius, z));
+        }
+        for (let i = 1; i < arcCount; i += 1) {
+          const a = -Math.PI / 2 - (Math.PI * i) / arcCount;
+          points.push(new THREE.Vector3(x1 + Math.cos(a) * radius, y + Math.sin(a) * radius, z));
+        }
+        return new THREE.CatmullRomCurve3(points, true, "centripetal", 0.08);
+      }
+
+      function buildTransmission() {
+        const g = createGroup("GROUP_传动机构_TRANSMISSION");
+        const mx = CONFIG.drive.outputX;
+        const my = CONFIG.motor.y;
+        const planeZ = CONFIG.drive.planeZ;
+        const axleX = CONFIG.drive.axleX;
+
+        addCylinder(g, 0.105, 0.105, 0.045, 22, [mx, my, 0.055], MAT.steel, { axis: "z" });
+        addCylinder(g, 0.105, 0.105, 0.045, 22, [mx, my, 0.108], MAT.steel, { axis: "z" });
+        addCylinder(g, 0.075, 0.075, 0.065, 20, [mx, my, 0.082], MAT.darkSteel, { axis: "z" });
+
+        addBox(g, [0.48, 0.44, 0.30], [mx, my, 0.285], MAT.gearbox, { edges: true });
+        addBox(g, [0.34, 0.18, 0.035], [mx, my + 0.08, 0.445], MAT.darkSteel, { edges: true });
+        addBolt(g, mx + 0.18, my + 0.15, 0.45, MAT.steel, { axis: "z", radius: 0.028, height: 0.025 });
+        addBolt(g, mx - 0.18, my + 0.15, 0.45, MAT.steel, { axis: "z", radius: 0.028, height: 0.025 });
+
+        addCylinder(g, 0.052, 0.052, 0.98, 18, [mx, my, 0.92], MAT.steel, { axis: "z" });
+        addCylinder(g, 0.088, 0.088, 0.09, 20, [mx, my, 0.66], MAT.darkSteel, { axis: "z" });
+
+        addCylinder(g, 0.055, 0.055, 0.33, 16, [axleX, CONFIG.wheel.y, 1.34], MAT.steel, { axis: "z" });
+        addCylinder(g, 0.095, 0.095, 0.075, 20, [axleX, CONFIG.wheel.y, 1.205], MAT.darkSteel, { axis: "z" });
+
+        buildSprocket(g, mx, my, planeZ, CONFIG.drive.sprocketRadius, 14, MAT.steel);
+        buildSprocket(g, axleX, CONFIG.wheel.y, planeZ, CONFIG.drive.sprocketRadius, 14, MAT.steel);
+
+        const chainCurve = createStadiumCurve(mx, axleX, my, planeZ, 0.202);
+        const chainGeo = new THREE.TubeGeometry(chainCurve, 150, 0.024, 5, true);
+        const chainMesh = new THREE.Mesh(chainGeo, MAT.chain);
+        chainMesh.castShadow = true;
+        chainMesh.receiveShadow = true;
+        g.add(chainMesh);
+
+        for (let i = 0; i < 22; i += 1) {
+          const t = i / 22;
+          const p = chainCurve.getPointAt(t);
+          const tangent = chainCurve.getTangentAt(t);
+          const link = addBox(
+            g,
+            [0.078, 0.035, 0.052],
+            [p.x, p.y, p.z + (i % 2 === 0 ? 0.014 : -0.014)],
+            MAT.chain,
+            { edges: false, castShadow: false }
+          );
+          link.rotation.z = Math.atan2(tangent.y, tangent.x);
+        }
+
+        return g;
+      }
+
+      function buildLimitSwitch(id, x, inward, name) {
+        const g = createGroup(name);
+        g.position.set(x, 0, CONFIG.limit.z);
+
+        addBox(g, [0.62, 0.04, 0.44], [0, 0.44, 0], MAT.darkSteel, { edges: true });
+        addBox(g, [0.18, 0.52, 0.18], [0, 0.71, -0.02], MAT.switchMetal, { edges: true });
+        addBox(g, [0.34, 0.06, 0.28], [0, 0.97, 0.0], MAT.darkSteel, { edges: true });
+        addBox(g, [0.30, 0.34, 0.22], [0, 1.10, 0], MAT.switchBody, { edges: true });
+        addBox(g, [0.32, 0.06, 0.24], [0, 1.29, 0], MAT.switchDark, { edges: true });
+        addBox(g, [0.22, 0.11, 0.035], [0, 1.08, 0.125], MAT.black, { edges: true });
+        addCylinder(g, 0.042, 0.042, 0.105, 16, [0, 1.055, 0.135], MAT.switchMetal, { axis: "z" });
+
+        const leverPivot = createGroup("LIMIT_LEVER_" + id.toUpperCase());
+        leverPivot.position.set(0, 1.055, 0.135);
+        g.add(leverPivot);
+        const arm = addBox(
+          leverPivot,
+          [0.43, 0.035, 0.035],
+          [inward * 0.215, -0.01, 0.03],
+          MAT.switchMetal,
+          { edges: false }
+        );
+        arm.rotation.z = -0.115 * inward;
+        addCylinder(leverPivot, 0.055, 0.055, 0.068, 18, [inward * 0.43, -0.043, 0.045], MAT.rubber, { axis: "z" });
+
+        const ledMaterial = new THREE.MeshBasicMaterial({ color: 0x4c5d5a, toneMapped: false });
+        const led = addBox(g, [0.085, 0.042, 0.024], [0, 1.218, 0.124], ledMaterial, { edges: false, castShadow: false });
+        led.userData.simRole = id === "sq2" ? "sq2Led" : "sq1Led";
+        g.userData.leverPivot = leverPivot;
+        g.userData.leverInward = inward;
+
+        addCylinder(g, 0.042, 0.042, 0.105, 14, [0, 0.91, -0.02], MAT.darkSteel, { axis: "y" });
+        addBolt(g, 0.22, 0.465, 0.17, MAT.steel, { radius: 0.026, height: 0.024 });
+        addBolt(g, -0.22, 0.465, 0.17, MAT.steel, { radius: 0.026, height: 0.024 });
+
+        g.userData.role = id;
+        return g;
+      }
+
+      function buildCabinetBody() {
+        const g = createGroup("GROUP_控制柜柜体_CABINET");
+        const cx = CONFIG.cabinet.x;
+        const cz = CONFIG.cabinet.z;
+        const frontZ = CONFIG.cabinet.frontZ;
+        const backZ = CONFIG.cabinet.backZ;
+        const leftX = cx - CONFIG.cabinet.width / 2;
+        const rightX = cx + CONFIG.cabinet.width / 2;
+
+        addBox(g, [2.62, 0.12, 1.18], [cx, 0.06, cz], MAT.cabinetDark, { edges: true });
+        addBox(g, [2.50, 0.08, 1.05], [cx, 0.16, cz], MAT.cabinetEdge, { edges: true });
+        addBox(g, [0.06, 2.44, 1.05], [leftX, 1.42, cz], MAT.cabinet, { edges: true });
+        addBox(g, [0.06, 2.44, 1.05], [rightX, 1.42, cz], MAT.cabinet, { edges: true });
+        addBox(g, [2.44, 2.44, 0.06], [cx, 1.42, backZ], MAT.cabinet, { edges: true });
+        addBox(g, [2.56, 0.08, 1.10], [cx, 2.64, cz], MAT.cabinet, { edges: true });
+        addBox(g, [2.42, 0.06, 1.00], [cx, 0.205, cz], MAT.cabinetDark, { edges: true });
+
+        addBox(g, [2.42, 0.17, 0.07], [cx, 2.505, frontZ], MAT.cabinet, { edges: true });
+        addBox(g, [2.42, 0.12, 0.07], [cx, 0.28, frontZ], MAT.cabinet, { edges: true });
+        addBox(g, [0.08, 2.34, 0.07], [leftX + 0.035, 1.37, frontZ], MAT.cabinet, { edges: true });
+        addBox(g, [0.08, 2.34, 0.07], [rightX - 0.035, 1.37, frontZ], MAT.cabinet, { edges: true });
+
+        addBox(g, [2.26, 2.15, 0.04], [cx, 1.42, backZ + 0.045], MAT.cabinetInner, { edges: true, castShadow: false });
+        addBox(g, [2.10, 0.045, 0.055], [cx, 2.03, backZ + 0.085], MAT.steel, { edges: false, castShadow: false });
+        addBox(g, [2.10, 0.045, 0.055], [cx, 1.18, backZ + 0.085], MAT.steel, { edges: false, castShadow: false });
+
+        addBox(g, [0.15, 1.82, 0.15], [leftX + 0.16, 1.37, backZ + 0.18], MAT.cabinetPanel, { edges: true });
+        addBox(g, [2.12, 0.13, 0.13], [cx, 0.50, backZ + 0.17], MAT.cabinetPanel, { edges: true });
+
+        for (let i = 0; i < 9; i += 1) {
+          addBox(g, [0.15, 0.18, 0.11], [leftX + 0.45 + i * 0.22, 0.63, backZ + 0.18], MAT.cabinetPanel, { edges: false, castShadow: false });
+          addBox(g, [0.10, 0.02, 0.115], [leftX + 0.45 + i * 0.22, 0.72, backZ + 0.19], MAT.steel, { edges: false, castShadow: false });
+        }
+
+        addBox(g, [0.20, 0.62, 0.56], [rightX + 0.12, 0.93, -2.93], MAT.cabinetDark, { edges: true });
+        addBox(g, [0.035, 0.52, 0.46], [rightX + 0.225, 0.93, -2.93], MAT.black, { edges: true });
+        addBox(g, [0.12, 0.07, 0.44], [rightX + 0.06, 1.24, -2.93], MAT.cabinetEdge, { edges: true });
+
+        for (let i = 0; i < 4; i += 1) {
+          addBox(g, [0.018, 0.012, 0.30], [rightX + 0.005, 1.92 + i * 0.08, -3.06], MAT.black, { edges: false, castShadow: false });
+        }
+
+        return g;
+      }
+
+      function buildCabinetDoor() {
+        const pivot = createGroup("GROUP_柜门_DOOR");
+        pivot.position.set(CONFIG.cabinetDoor.hingeX, CONFIG.cabinetDoor.hingeY, CONFIG.cabinetDoor.hingeZ);
+
+        // 门板做成带真实观察窗开口的四块拼板，开合时两面都具备门体结构。
+        addBox(pivot, [2.32, 0.45, 0.055], [1.16, 0.935, 0.02], MAT.cabinet, { edges: true });
+        addBox(pivot, [2.32, 1.25, 0.055], [1.16, -0.535, 0.02], MAT.cabinet, { edges: true });
+        addBox(pivot, [0.66, 0.62, 0.055], [0.33, 0.40, 0.02], MAT.cabinet, { edges: true });
+        addBox(pivot, [0.66, 0.62, 0.055], [1.99, 0.40, 0.02], MAT.cabinet, { edges: true });
+
+        addBox(pivot, [2.32, 0.055, 0.065], [1.16, 1.13, 0.055], MAT.cabinetEdge, { edges: true });
+        addBox(pivot, [2.32, 0.055, 0.065], [1.16, -1.13, 0.055], MAT.cabinetEdge, { edges: true });
+        addBox(pivot, [0.055, 2.26, 0.065], [0.03, 0, 0.055], MAT.cabinetEdge, { edges: true });
+        addBox(pivot, [0.055, 2.26, 0.065], [2.29, 0, 0.055], MAT.cabinetEdge, { edges: true });
+
+        const glass = addBox(pivot, [1.00, 0.62, 0.018], [1.16, 0.40, 0.02], MAT.glass, { edges: false, castShadow: false, receiveShadow: false });
+        glass.userData.ignorePick = true;
+        addBox(pivot, [1.08, 0.06, 0.035], [1.16, 0.74, 0.068], MAT.cabinetEdge, { edges: true, castShadow: false });
+        addBox(pivot, [1.08, 0.06, 0.035], [1.16, 0.06, 0.068], MAT.cabinetEdge, { edges: true, castShadow: false });
+        addBox(pivot, [0.06, 0.68, 0.035], [0.65, 0.40, 0.068], MAT.cabinetEdge, { edges: true, castShadow: false });
+        addBox(pivot, [0.06, 0.68, 0.035], [1.67, 0.40, 0.068], MAT.cabinetEdge, { edges: true, castShadow: false });
+
+        // 门内侧加强筋、锁扣和手柄，让打开后的背面也有可读结构。
+        addBox(pivot, [1.92, 0.045, 0.04], [1.16, -0.34, -0.038], MAT.cabinetEdge, { edges: true, castShadow: false });
+        addBox(pivot, [0.055, 1.95, 0.035], [0.33, -0.02, -0.042], MAT.cabinetEdge, { edges: true, castShadow: false });
+        addBox(pivot, [0.26, 0.16, 0.045], [2.03, -0.34, -0.04], MAT.darkSteel, { edges: true, castShadow: false });
+        addBox(pivot, [0.06, 0.44, 0.055], [2.13, -0.10, -0.080], MAT.darkSteel, { edges: true, castShadow: false });
+
+        addBox(pivot, [0.06, 0.53, 0.06], [2.13, -0.10, 0.090], MAT.darkSteel, { edges: true });
+        addBox(pivot, [0.13, 0.05, 0.075], [2.13, 0.11, 0.09], MAT.darkSteel, { edges: true });
+        addBox(pivot, [0.13, 0.05, 0.075], [2.13, -0.31, 0.09], MAT.darkSteel, { edges: true });
+
+        [-0.92, 0, 0.92].forEach(function (y) {
+          addCylinder(pivot, 0.042, 0.042, 0.14, 14, [0, y, 0.02], MAT.switchMetal, { axis: "y", castShadow: false });
+        });
+
+        for (let i = 0; i < 4; i += 1) {
+          addBox(pivot, [0.52, 0.018, 0.018], [1.16, -0.72 - i * 0.085, 0.054], MAT.black, { edges: false, castShadow: false });
+          addBox(pivot, [0.52, 0.018, 0.018], [1.16, -0.72 - i * 0.085, -0.014], MAT.black, { edges: false, castShadow: false });
+        }
+
+        pivot.userData.partId = "door";
+        return pivot;
+      }
+
+      function buildPLC() {
+        const g = createGroup("GROUP_PLC");
+        const x = 4.14;
+        const y = 2.00;
+        const z = -3.38;
+
+        addBox(g, [0.96, 0.60, 0.20], [x, y, z], MAT.plcBody, { edges: true });
+        addBox(g, [0.87, 0.095, 0.24], [x, y + 0.33, z], MAT.plcTerminal, { edges: true });
+        addBox(g, [0.87, 0.095, 0.24], [x, y - 0.33, z], MAT.plcTerminal, { edges: true });
+        addBox(g, [0.78, 0.255, 0.018], [x, y + 0.02, z + 0.108], MAT.black, { edges: true, castShadow: false });
+        addBox(g, [0.27, 0.12, 0.024], [x - 0.20, y + 0.01, z + 0.125], MAT.darkSteel, { edges: true, castShadow: false });
+
+        for (let i = 0; i < 4; i += 1) {
+          addBox(g, [0.026, 0.022, 0.016], [x + 0.13 + i * 0.045, y + 0.075, z + 0.125], i === 0 ? MAT.plcLight : MAT.steel, { edges: false, castShadow: false });
+        }
+        addBox(g, [0.05, 0.35, 0.05], [x - 0.42, y, z - 0.11], MAT.steel, { edges: false, castShadow: false });
+        addBox(g, [0.05, 0.35, 0.05], [x + 0.42, y, z - 0.11], MAT.steel, { edges: false, castShadow: false });
+
+        const runLedMaterial = new THREE.MeshBasicMaterial({ color: 0x4c5d5a, toneMapped: false });
+        const runLed = addBox(g, [0.075, 0.045, 0.022], [x + 0.34, y + 0.15, z + 0.125], runLedMaterial, { edges: false, castShadow: false });
+        runLed.userData.simRole = "plcRun";
+        return g;
+      }
+
+      function buildContactor(id, x, trimMaterial) {
+        const g = createGroup(id === "km1" ? "GROUP_正转接触器_KM1" : "GROUP_反转接触器_KM2");
+        const y = 1.23;
+        const z = -3.37;
+
+        addBox(g, [0.59, 0.70, 0.22], [x, y, z], MAT.contactor, { edges: true });
+        addBox(g, [0.52, 0.10, 0.24], [x, y + 0.36, z], MAT.contactorDark, { edges: true });
+        addBox(g, [0.52, 0.10, 0.24], [x, y - 0.36, z], MAT.contactorDark, { edges: true });
+        addBox(g, [0.52, 0.15, 0.22], [x, y - 0.47, z], MAT.contactorDark, { edges: true });
+        addBox(g, [0.31, 0.33, 0.035], [x, y + 0.02, z + 0.125], MAT.contactorDark, { edges: true, castShadow: false });
+        addBox(g, [0.54, 0.055, 0.026], [x, y + 0.19, z + 0.128], trimMaterial, { edges: false, castShadow: false });
+
+        const ledMaterial = new THREE.MeshBasicMaterial({ color: 0x4c5d5a, toneMapped: false });
+        const led = addBox(g, [0.055, 0.055, 0.025], [x + 0.20, y + 0.28, z + 0.137], ledMaterial, { edges: false, castShadow: false });
+        led.userData.simRole = id === "km1" ? "km1Led" : "km2Led";
+
+        [-0.18, 0.18].forEach(function (dx) {
+          addCylinder(g, 0.027, 0.027, 0.02, 10, [x + dx, y + 0.37, z + 0.13], MAT.steel, { axis: "z", castShadow: false });
+          addCylinder(g, 0.027, 0.027, 0.02, 10, [x + dx, y - 0.37, z + 0.13], MAT.steel, { axis: "z", castShadow: false });
+        });
+
+        return g;
+      }
+
+      function buildPushButton(id, y, material) {
+        const g = createGroup(id === "startButton" ? "GROUP_启动按钮_START" : "GROUP_停止按钮_STOP");
+        const x = 5.62;
+        const z = -2.94;
+        addCylinder(g, 0.14, 0.14, 0.025, 24, [x, y, z], MAT.buttonRing, { axis: "x" });
+        const cap = addCylinder(g, 0.10, 0.10, 0.075, 24, [x + 0.045, y, z], material, { axis: "x" });
+        addCylinder(g, 0.037, 0.037, 0.012, 12, [x + 0.088, y, z], MAT.steel, { axis: "x", castShadow: false });
+        g.userData.cap = cap;
+        g.userData.capBaseX = x + 0.045;
+        return g;
+      }
+
+      function buildDirectionArrow() {
+        const g = createGroup("DIRECTION_ARROW_CONTEXT");
+        const y = 0.065;
+        const z = CONFIG.arrow.z;
+        addCylinder(g, 0.036, 0.036, CONFIG.arrow.halfLength * 2 - 0.30, 16, [0, y, z], MAT.arrow, { axis: "x", castShadow: false });
+        addCone(g, 0.12, 0.32, [CONFIG.arrow.halfLength, y, z], MAT.arrow, [0, 0, -Math.PI / 2]);
+        addCone(g, 0.12, 0.32, [-CONFIG.arrow.halfLength, y, z], MAT.arrow, [0, 0, Math.PI / 2]);
+
+        [CONFIG.arrow.halfLength, -CONFIG.arrow.halfLength].forEach(function (x) {
+          addBox(g, [0.035, 0.012, 0.28], [x, y + 0.008, z], MAT.arrow, { edges: false, castShadow: false });
+        });
+        return g;
+      }
+
+      /* =====================================================================
+         组装模型：每项都是独立的可选中 Group
+         ===================================================================== */
+      const baseGroup = buildBase();
+      const railsGroup = createGroup("GROUP_导轨组_RAILS");
+      const railLeftGroup = buildRailMesh(-1);
+      const railRightGroup = buildRailMesh(1);
+      railLeftGroup.position.z = -CONFIG.rail.gauge / 2;
+      railRightGroup.position.z = CONFIG.rail.gauge / 2;
+      railsGroup.add(railLeftGroup);
+      railsGroup.add(railRightGroup);
+
+      const trolleyGroup = buildTrolley();
+      const wheelsGroup = buildWheels();
+      const motorGroup = buildMotor();
+      const transmissionGroup = buildTransmission();
+      const sq2Group = buildLimitSwitch("sq2", -CONFIG.limit.x, 1, "GROUP_左端原点限位_SQ2");
+      const sq1Group = buildLimitSwitch("sq1", CONFIG.limit.x, -1, "GROUP_右端前限位_SQ1");
+      const cabinetGroup = buildCabinetBody();
+      const doorGroup = buildCabinetDoor();
+      const plcGroup = buildPLC();
+      const km1Group = buildContactor("km1", 3.52, MAT.contactorBlue);
+      const km2Group = buildContactor("km2", 4.78, MAT.contactorAmber);
+      const startButtonGroup = buildPushButton("startButton", 1.04, MAT.buttonGreen);
+      const stopButtonGroup = buildPushButton("stopButton", 0.75, MAT.buttonRed);
+
+      const partGroups = {
+        base: baseGroup,
+        rails: railsGroup,
+        trolley: trolleyGroup,
+        wheels: wheelsGroup,
+        motor: motorGroup,
+        transmission: transmissionGroup,
+        sq2: sq2Group,
+        sq1: sq1Group,
+        cabinet: cabinetGroup,
+        door: doorGroup,
+        plc: plcGroup,
+        km1: km1Group,
+        km2: km2Group,
+        startButton: startButtonGroup,
+        stopButton: stopButtonGroup
+      };
+
+      const parts = new Map();
+      const pickables = [];
+      const simMaterialRefs = {};
+
+      function registerPart(id, group, movers) {
+        const info = PART_INFO[id];
+        const part = {
+          id: id,
+          info: info,
+          group: group,
+          movers: [],
+          materials: [],
+          hidden: false
+        };
+
+        group.name = "PART_" + id + "_" + info.code.replace(/[^A-Za-z0-9_-]/g, "_");
+        group.userData.partId = id;
+        group.userData.displayName = info.name;
+        group.userData.code = info.code;
+        modelRoot.add(group);
+
+        const addMaterials = function (mesh) {
+          const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+          mats.forEach(function (mat) {
+            if (!mat) return;
+            const entry = {
+              material: mat,
+              color: mat.color && mat.color.clone ? mat.color.clone() : null,
+              emissive: mat.emissive && mat.emissive.clone ? mat.emissive.clone() : null,
+              emissiveIntensity: typeof mat.emissiveIntensity === "number" ? mat.emissiveIntensity : 1
+            };
+            part.materials.push(entry);
+          });
+        };
+
+        group.traverse(function (obj) {
+          if (!obj.isMesh) return;
+          obj.userData.partId = id;
+          if (Array.isArray(obj.material)) {
+            obj.material = obj.material.map(function (m) { return m.clone(); });
+          } else if (obj.material) {
+            obj.material = obj.material.clone();
+          }
+          if (obj.userData.simRole) {
+            simMaterialRefs[obj.userData.simRole] = Array.isArray(obj.material) ? obj.material[0] : obj.material;
+          }
+          addMaterials(obj);
+          if (!obj.userData.ignorePick) pickables.push(obj);
+        });
+
+        movers.forEach(function (m) {
+          part.movers.push({
+            object: m.object,
+            home: m.home.clone(),
+            offset: m.offset.clone()
+          });
+        });
+
+        parts.set(id, part);
+        return part;
+      }
+
+      const zero = new THREE.Vector3(0, 0, 0);
+
+      registerPart("base", baseGroup, [
+        { object: baseGroup, home: baseGroup.position.clone(), offset: zero }
+      ]);
+      registerPart("rails", railsGroup, [
+        { object: railLeftGroup, home: railLeftGroup.position.clone(), offset: CONFIG.explode.railLeft },
+        { object: railRightGroup, home: railRightGroup.position.clone(), offset: CONFIG.explode.railRight }
+      ]);
+      registerPart("trolley", trolleyGroup, [
+        { object: trolleyGroup, home: trolleyGroup.position.clone(), offset: CONFIG.explode.trolley }
+      ]);
+      registerPart("wheels", wheelsGroup, [
+        { object: wheelsGroup, home: wheelsGroup.position.clone(), offset: CONFIG.explode.wheels }
+      ]);
+      registerPart("motor", motorGroup, [
+        { object: motorGroup, home: motorGroup.position.clone(), offset: CONFIG.explode.motor }
+      ]);
+      registerPart("transmission", transmissionGroup, [
+        { object: transmissionGroup, home: transmissionGroup.position.clone(), offset: CONFIG.explode.transmission }
+      ]);
+      registerPart("sq2", sq2Group, [
+        { object: sq2Group, home: sq2Group.position.clone(), offset: CONFIG.explode.sq2 }
+      ]);
+      registerPart("sq1", sq1Group, [
+        { object: sq1Group, home: sq1Group.position.clone(), offset: CONFIG.explode.sq1 }
+      ]);
+      registerPart("cabinet", cabinetGroup, [
+        { object: cabinetGroup, home: cabinetGroup.position.clone(), offset: CONFIG.explode.cabinet }
+      ]);
+      registerPart("door", doorGroup, [
+        { object: doorGroup, home: doorGroup.position.clone(), offset: CONFIG.explode.cabinet }
+      ]);
+      registerPart("plc", plcGroup, [
+        { object: plcGroup, home: plcGroup.position.clone(), offset: CONFIG.explode.cabinet }
+      ]);
+      registerPart("km1", km1Group, [
+        { object: km1Group, home: km1Group.position.clone(), offset: CONFIG.explode.cabinet }
+      ]);
+      registerPart("km2", km2Group, [
+        { object: km2Group, home: km2Group.position.clone(), offset: CONFIG.explode.cabinet }
+      ]);
+      registerPart("startButton", startButtonGroup, [
+        { object: startButtonGroup, home: startButtonGroup.position.clone(), offset: CONFIG.explode.cabinet }
+      ]);
+      registerPart("stopButton", stopButtonGroup, [
+        { object: stopButtonGroup, home: stopButtonGroup.position.clone(), offset: CONFIG.explode.cabinet }
+      ]);
+
+      const directionArrowGroup = buildDirectionArrow();
+      modelRoot.add(directionArrowGroup);
+
+      /* 初始柜门向背侧打开，便于看到 PLC、KM1、KM2，同时避开台车运行通道。 */
+      doorGroup.rotation.y = CONFIG.cabinetDoor.openAngle;
+
+      /* =====================================================================
+         模型包围盒、装配偏移与辅助锚点
+         ===================================================================== */
+      const tmpBox = new THREE.Box3();
+      const assembledBox = new THREE.Box3();
+      const explodedBox = new THREE.Box3();
+      const wholeBox = new THREE.Box3();
+
+      const CARRIAGE_PART_IDS = new Set(["trolley", "wheels", "motor", "transmission"]);
+
+      function setMoverState(progress, carriageX) {
+        const runtimeX = typeof carriageX === "number" ? carriageX : 0;
+        parts.forEach(function (part) {
+          part.movers.forEach(function (mover) {
+            mover.object.position.copy(mover.home).addScaledVector(mover.offset, progress);
+            if (CARRIAGE_PART_IDS.has(part.id)) {
+              mover.object.position.x += runtimeX;
+            }
+          });
+        });
+      }
+
+      modelRoot.updateMatrixWorld(true);
+      setMoverState(0);
+      scene.updateMatrixWorld(true);
+      assembledBox.setFromObject(modelRoot);
+      setMoverState(1);
+      scene.updateMatrixWorld(true);
+      explodedBox.setFromObject(modelRoot);
+      setMoverState(0);
+      scene.updateMatrixWorld(true);
+      wholeBox.copy(assembledBox).union(explodedBox);
+
+      // 方向箭头属于场景提示，不进入部件拾取。
+      directionArrowGroup.traverse(function (obj) {
+        if (obj.isMesh) obj.userData.ignorePick = true;
+      });
+
+      /* =====================================================================
+         相机、视角与平滑聚焦
+         ===================================================================== */
+      const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const CAMERA_PRESETS = {
+        iso: { theta: 0.72, phi: 1.02 },
+        front: { theta: 0.02, phi: 1.44 },
+        top: { theta: 0.02, phi: 0.17 }
+      };
+
+      const cameraState = {
+        theta: CAMERA_PRESETS.iso.theta,
+        phi: CAMERA_PRESETS.iso.phi,
+        radius: 20,
+        target: new THREE.Vector3()
+      };
+
+      const viewState = {
+        active: "iso",
+        ready: false,
+        width: 1,
+        height: 1
+      };
+
+      let cameraTween = null;
+      const tmpCameraPos = new THREE.Vector3();
+      const tmpCameraSpace = new THREE.Vector3();
+      const tmpCenter = new THREE.Vector3();
+      const tmpCorner = new THREE.Vector3();
+
+      function easeInOutCubic(t) {
+        return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+      }
+
+      function clamp(value, min, max) {
+        return Math.min(max, Math.max(min, value));
+      }
+
+      function getCameraDirection(theta, phi) {
+        return new THREE.Vector3(
+          Math.sin(phi) * Math.sin(theta),
+          Math.cos(phi),
+          Math.sin(phi) * Math.cos(theta)
+        ).normalize();
+      }
+
+      function getActiveBox() {
+        return state.mode === "exploded" ? explodedBox : assembledBox;
+      }
+
+      function fitRadiusForBox(box, theta, phi, padding) {
+        const p = padding || 0.82;
+        const center = box.getCenter(new THREE.Vector3());
+        const direction = getCameraDirection(theta, phi);
+        const forward = direction.clone().negate();
+        const right = new THREE.Vector3().crossVectors(forward, camera.up).normalize();
+        const screenUp = new THREE.Vector3().crossVectors(right, forward).normalize();
+        const tanV = Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2);
+        const tanH = tanV * camera.aspect;
+        let maxDistance = 0;
+
+        for (let ix = 0; ix < 2; ix += 1) {
+          for (let iy = 0; iy < 2; iy += 1) {
+            for (let iz = 0; iz < 2; iz += 1) {
+              tmpCorner.set(
+                ix ? box.max.x : box.min.x,
+                iy ? box.max.y : box.min.y,
+                iz ? box.max.z : box.min.z
+              ).sub(center);
+
+              const x = Math.abs(tmpCorner.dot(right));
+              const y = Math.abs(tmpCorner.dot(screenUp));
+              const towardCamera = tmpCorner.dot(direction);
+              const needH = towardCamera + x / (tanH * p);
+              const needV = towardCamera + y / (tanV * p);
+              maxDistance = Math.max(maxDistance, needH, needV);
+            }
+          }
+        }
+
+        return Math.max(4.5, maxDistance + 0.25);
+      }
+
+      function getZoomBounds() {
+        const activeBox = getActiveBox();
+        const fitted = fitRadiusForBox(activeBox, cameraState.theta, cameraState.phi, 0.84);
+        return {
+          min: Math.max(4.6, fitted * 0.34),
+          max: Math.max(34, fitted * 2.8)
+        };
+      }
+
+      function applyCamera() {
+        const direction = getCameraDirection(cameraState.theta, cameraState.phi);
+        camera.position.copy(cameraState.target).addScaledVector(direction, cameraState.radius);
+        camera.lookAt(cameraState.target);
+        camera.updateMatrixWorld();
+      }
+
+      function animateCameraTo(next, duration) {
+        const to = {
+          theta: next.theta,
+          phi: next.phi,
+          target: next.target.clone(),
+          radius: next.radius
+        };
+        let deltaTheta = to.theta - cameraState.theta;
+        deltaTheta = Math.atan2(Math.sin(deltaTheta), Math.cos(deltaTheta));
+        to.theta = cameraState.theta + deltaTheta;
+
+        if (reducedMotion || !duration) {
+          cameraState.theta = to.theta;
+          cameraState.phi = to.phi;
+          cameraState.target.copy(to.target);
+          cameraState.radius = to.radius;
+          cameraTween = null;
+          applyCamera();
+          return;
+        }
+
+        cameraTween = {
+          elapsed: 0,
+          duration: duration,
+          from: {
+            theta: cameraState.theta,
+            phi: cameraState.phi,
+            target: cameraState.target.clone(),
+            radius: cameraState.radius
+          },
+          to: to
+        };
+      }
+
+      function updateCameraTween(dt) {
+        if (!cameraTween) return;
+        cameraTween.elapsed += dt;
+        const raw = Math.min(1, cameraTween.elapsed / cameraTween.duration);
+        const t = easeInOutCubic(raw);
+        cameraState.theta = THREE.MathUtils.lerp(cameraTween.from.theta, cameraTween.to.theta, t);
+        cameraState.phi = THREE.MathUtils.lerp(cameraTween.from.phi, cameraTween.to.phi, t);
+        cameraState.target.lerpVectors(cameraTween.from.target, cameraTween.to.target, t);
+        cameraState.radius = THREE.MathUtils.lerp(cameraTween.from.radius, cameraTween.to.radius, t);
+        if (raw >= 1) cameraTween = null;
+      }
+
+      function cancelCameraTween() {
+        cameraTween = null;
+      }
+
+      function markCameraCustom() {
+        if (!viewState.active) return;
+        viewState.active = null;
+        updateViewButtons();
+      }
+
+      function updateViewButtons() {
+        document.querySelectorAll("[data-view]").forEach(function (button) {
+          button.classList.toggle("is-active", button.getAttribute("data-view") === viewState.active);
+        });
+      }
+
+      function frameWhole(animate) {
+        const activeBox = getActiveBox();
+        const center = activeBox.getCenter(new THREE.Vector3());
+        const radius = fitRadiusForBox(activeBox, cameraState.theta, cameraState.phi, 0.84);
+        const bounds = getZoomBounds();
+        animateCameraTo({
+          theta: cameraState.theta,
+          phi: cameraState.phi,
+          target: center,
+          radius: clamp(radius, bounds.min, bounds.max)
+        }, animate ? 720 : 0);
+      }
+
+      function goToView(viewKey, animate) {
+        const preset = CAMERA_PRESETS[viewKey];
+        if (!preset) return;
+        viewState.active = viewKey;
+        updateViewButtons();
+        const activeBox = getActiveBox();
+        const center = activeBox.getCenter(new THREE.Vector3());
+        const radius = fitRadiusForBox(activeBox, preset.theta, preset.phi, 0.84);
+        const bounds = (function () {
+          const prevTheta = cameraState.theta;
+          const prevPhi = cameraState.phi;
+          cameraState.theta = preset.theta;
+          cameraState.phi = preset.phi;
+          const b = getZoomBounds();
+          cameraState.theta = prevTheta;
+          cameraState.phi = prevPhi;
+          return b;
+        })();
+
+        animateCameraTo({
+          theta: preset.theta,
+          phi: preset.phi,
+          target: center,
+          radius: clamp(radius, bounds.min, bounds.max)
+        }, animate ? 760 : 0);
+      }
+
+      function focusPart(part, closeUp) {
+        if (!part || !part.group.visible) return;
+        const activeBox = getActiveBox();
+        const box = new THREE.Box3().setFromObject(part.group);
+        if (box.isEmpty()) return;
+        const center = box.getCenter(new THREE.Vector3());
+
+        if (closeUp) {
+          const isolatedRadius = Math.max(3.2, fitRadiusForBox(box, cameraState.theta, cameraState.phi, 0.64) * 1.1);
+          animateCameraTo({
+            theta: cameraState.theta,
+            phi: cameraState.phi,
+            target: center,
+            radius: isolatedRadius
+          }, 680);
+          return;
+        }
+
+        const fullRadius = fitRadiusForBox(activeBox, cameraState.theta, cameraState.phi, 0.84);
+        const partRadius = fitRadiusForBox(box, cameraState.theta, cameraState.phi, 0.82);
+        const radius = Math.min(fullRadius * 1.08, Math.max(fullRadius * 0.72, partRadius * 1.3));
+        const bounds = getZoomBounds();
+        const blendedCenter = center.lerp(activeBox.getCenter(new THREE.Vector3()), 0.14);
+
+        animateCameraTo({
+          theta: cameraState.theta,
+          phi: cameraState.phi,
+          target: blendedCenter,
+          radius: clamp(radius, bounds.min, bounds.max)
+        }, 680);
+      }
+
+      /* =====================================================================
+         拆分引导线
+         ===================================================================== */
+      const GUIDE_DEFS = [
+        { partId: "rails", home: new THREE.Vector3(0, 0.45, -1.0), offset: CONFIG.explode.railLeft },
+        { partId: "rails", home: new THREE.Vector3(0, 0.45, 1.0), offset: CONFIG.explode.railRight },
+        { partId: "trolley", home: new THREE.Vector3(-0.82, 1.34, 1.19), offset: CONFIG.explode.trolley },
+        { partId: "trolley", home: new THREE.Vector3(0.82, 1.34, 1.19), offset: CONFIG.explode.trolley },
+        { partId: "trolley", home: new THREE.Vector3(-0.82, 1.34, -1.19), offset: CONFIG.explode.trolley },
+        { partId: "trolley", home: new THREE.Vector3(0.82, 1.34, -1.19), offset: CONFIG.explode.trolley },
+        { partId: "wheels", home: new THREE.Vector3(-0.82, 1.00, 1.0), offset: CONFIG.explode.wheels },
+        { partId: "wheels", home: new THREE.Vector3(0.82, 1.00, 1.0), offset: CONFIG.explode.wheels },
+        { partId: "wheels", home: new THREE.Vector3(-0.82, 1.00, -1.0), offset: CONFIG.explode.wheels },
+        { partId: "wheels", home: new THREE.Vector3(0.82, 1.00, -1.0), offset: CONFIG.explode.wheels },
+        { partId: "motor", home: new THREE.Vector3(-0.42, 1.575, -0.62), offset: CONFIG.explode.motor },
+        { partId: "motor", home: new THREE.Vector3(-0.42, 1.575, -0.10), offset: CONFIG.explode.motor },
+        { partId: "transmission", home: new THREE.Vector3(-0.42, 0.99, 0.62), offset: CONFIG.explode.transmission },
+        { partId: "transmission", home: new THREE.Vector3(0.82, 1.00, 1.20), offset: CONFIG.explode.transmission },
+        { partId: "sq2", home: new THREE.Vector3(-4.86, 0.45, 1.47), offset: CONFIG.explode.sq2 },
+        { partId: "sq1", home: new THREE.Vector3(4.86, 0.45, 1.47), offset: CONFIG.explode.sq1 },
+        { partId: "cabinet", home: new THREE.Vector3(3.05, 0.12, -2.72), offset: CONFIG.explode.cabinet },
+        { partId: "cabinet", home: new THREE.Vector3(5.25, 0.12, -2.72), offset: CONFIG.explode.cabinet }
+      ];
+
+      const guideItems = [];
+
+      function buildGuides() {
+        GUIDE_DEFS.forEach(function (def) {
+          const positions = new Float32Array(6);
+          const geometry = new THREE.BufferGeometry();
+          geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+          const material = new THREE.LineDashedMaterial({
+            color: 0x956911,
+            transparent: true,
+            opacity: 0.82,
+            dashSize: 0.16,
+            gapSize: 0.08,
+            depthWrite: false,
+            depthTest: false
+          });
+          const line = new THREE.Line(geometry, material);
+          line.frustumCulled = false;
+          line.renderOrder = 8;
+          line.visible = false;
+          guideRoot.add(line);
+
+          const markerMaterial = MAT.guideMarker.clone();
+          markerMaterial.opacity = 0.85;
+          markerMaterial.depthTest = false;
+          const marker = new THREE.Mesh(new THREE.SphereGeometry(0.045, 10, 8), markerMaterial);
+          marker.position.copy(def.home);
+          marker.visible = false;
+          marker.renderOrder = 9;
+          guideRoot.add(marker);
+
+          const endMarkerMaterial = MAT.guideMarkerEnd.clone();
+          const endMarker = new THREE.Mesh(new THREE.SphereGeometry(0.05, 10, 8), endMarkerMaterial);
+          endMarker.visible = false;
+          endMarker.renderOrder = 9;
+          guideRoot.add(endMarker);
+
+          guideItems.push({
+            def: def,
+            line: line,
+            marker: marker,
+            endMarker: endMarker,
+            positions: positions
+          });
+        });
+      }
+
+      function updateGuides() {
+        const active = state.guides && state.explodeProgress > 0.015;
+        guideItems.forEach(function (item) {
+          const part = parts.get(item.def.partId);
+          const visible = active && part && part.group.visible;
+          item.line.visible = visible;
+          item.marker.visible = visible;
+          item.endMarker.visible = visible;
+          if (!visible) return;
+
+          const end = item.def.home.clone().addScaledVector(item.def.offset, state.explodeProgress);
+          item.positions[0] = item.def.home.x;
+          item.positions[1] = item.def.home.y;
+          item.positions[2] = item.def.home.z;
+          item.positions[3] = end.x;
+          item.positions[4] = end.y;
+          item.positions[5] = end.z;
+          item.line.geometry.attributes.position.needsUpdate = true;
+          item.line.geometry.computeBoundingSphere();
+          item.line.computeLineDistances();
+          item.endMarker.position.copy(end);
+
+          const alpha = clamp(state.explodeProgress, 0, 1);
+          item.line.material.opacity = 0.5 + alpha * 0.4;
+          item.marker.material.opacity = 0.55 + alpha * 0.3;
+          item.endMarker.material.opacity = 0.4 + alpha * 0.4;
+        });
+      }
+
+      /* =====================================================================
+         标注锚点与引线标签
+         ===================================================================== */
+      function makeAnchor(partId, x, y, z) {
+        const obj = new THREE.Object3D();
+        obj.position.set(x, y, z);
+        const part = parts.get(partId);
+        if (part) part.group.add(obj);
+        return obj;
+      }
+
+      const directionAnchor = new THREE.Object3D();
+      directionAnchor.position.set(0, 0.10, CONFIG.arrow.z);
+      modelRoot.add(directionAnchor);
+
+      const labelAnchors = {
+        direction: directionAnchor,
+        sq2: makeAnchor("sq2", 0, 1.10, 0.14),
+        sq1: makeAnchor("sq1", 0, 1.10, 0.14),
+        plc: makeAnchor("plc", 4.14, 2.00, -3.25),
+        km1: makeAnchor("km1", 3.52, 1.23, -3.25),
+        km2: makeAnchor("km2", 4.78, 1.23, -3.25),
+        startButton: makeAnchor("startButton", 5.71, 1.04, -2.94),
+        stopButton: makeAnchor("stopButton", 5.71, 0.75, -2.94)
+      };
+
+      const LABEL_DEFS = [
+        {
+          id: "direction",
+          title: "台车运行方向",
+          arrow: true,
+          note: "沿两条平行导轨往复",
+          anchor: labelAnchors.direction,
+          offset: { x: 0, y: 48 },
+          tone: "#a87610",
+          priority: 100,
+          partId: null,
+          className: "callout--direction callout--static"
+        },
+        {
+          id: "sq2",
+          title: "左端原点限位",
+          code: "SQ2",
+          note: "行程左端 · 原点检测",
+          anchor: labelAnchors.sq2,
+          offset: { x: -92, y: -28 },
+          tone: PART_INFO.sq2.color,
+          priority: 96,
+          partId: "sq2"
+        },
+        {
+          id: "sq1",
+          title: "右端前限位",
+          code: "SQ1",
+          note: "行程右端 · 前限检测",
+          anchor: labelAnchors.sq1,
+          offset: { x: 76, y: -28 },
+          tone: PART_INFO.sq1.color,
+          priority: 96,
+          partId: "sq1"
+        },
+        {
+          id: "plc",
+          title: "PLC",
+          code: null,
+          note: "",
+          anchor: labelAnchors.plc,
+          offset: { x: 82, y: -78 },
+          tone: PART_INFO.plc.color,
+          priority: 76,
+          partId: "plc"
+        },
+        {
+          id: "km1",
+          title: "正转接触器",
+          code: "KM1",
+          note: "",
+          anchor: labelAnchors.km1,
+          offset: { x: 138, y: -12 },
+          tone: PART_INFO.km1.color,
+          priority: 72,
+          partId: "km1"
+        },
+        {
+          id: "km2",
+          title: "反转接触器",
+          code: "KM2",
+          note: "",
+          anchor: labelAnchors.km2,
+          offset: { x: 150, y: 26 },
+          tone: PART_INFO.km2.color,
+          priority: 70,
+          partId: "km2"
+        },
+        {
+          id: "start",
+          title: "启动按钮",
+          code: null,
+          note: "",
+          anchor: labelAnchors.startButton,
+          offset: { x: 102, y: 65 },
+          tone: PART_INFO.startButton.color,
+          priority: 66,
+          partId: "startButton"
+        },
+        {
+          id: "stop",
+          title: "停止按钮",
+          code: null,
+          note: "",
+          anchor: labelAnchors.stopButton,
+          offset: { x: 124, y: 106 },
+          tone: PART_INFO.stopButton.color,
+          priority: 64,
+          partId: "stopButton"
+        }
+      ];
+
+      const annotationLayer = document.getElementById("annotation-layer");
+      const labelLayer = document.getElementById("callout-layer");
+      const leaderSvg = document.getElementById("leader-svg");
+      const labelItems = [];
+
+      function buildLabels() {
+        LABEL_DEFS.forEach(function (def) {
+          const el = document.createElement(def.partId ? "button" : "div");
+          if (def.partId) {
+            el.type = "button";
+            el.setAttribute("aria-label", "选择部件：" + def.title + (def.code ? " " + def.code : ""));
+          }
+          el.className = "callout " + (def.className || "");
+          el.style.setProperty("--tone", def.tone);
+          const codeHtml = def.code ? '<span class="callout__code">' + def.code + "</span>" : "";
+          const arrowHtml = def.arrow ? '<span class="callout__arrow">→</span>' : "";
+          const noteHtml = def.note ? '<div class="callout__note">' + def.note + "</div>" : "";
+          el.innerHTML = '<div class="callout__title">' + def.title + " " + codeHtml + arrowHtml + "</div>" + noteHtml;
+          el.style.display = "none";
+
+          if (def.partId) {
+            el.addEventListener("click", function (event) {
+              event.stopPropagation();
+              selectPart(def.partId, { focus: false, source: "label" });
+            });
+          }
+
+          labelLayer.appendChild(el);
+
+          const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+          path.setAttribute("class", "leader-line");
+          path.style.display = "none";
+          const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+          dot.setAttribute("class", "leader-dot");
+          dot.setAttribute("r", "2.4");
+          dot.setAttribute("fill", def.tone);
+          dot.style.display = "none";
+          leaderSvg.appendChild(path);
+          leaderSvg.appendChild(dot);
+
+          labelItems.push({
+            def: def,
+            el: el,
+            path: path,
+            dot: dot,
+            width: 0,
+            height: 0
+          });
+        });
+      }
+
+      function isPartVisible(partId) {
+        const part = parts.get(partId);
+        return !!(part && part.group.visible);
+      }
+
+      function hideLabelItem(item) {
+        item.el.style.display = "none";
+        item.path.style.display = "none";
+        item.dot.style.display = "none";
+      }
+
+      function rectsOverlap(a, b) {
+        return !(a.left + a.width + 4 < b.left ||
+          b.left + b.width + 4 < a.left ||
+          a.top + a.height + 4 < b.top ||
+          b.top + b.height + 4 < a.top);
+      }
+
+      function updateLabels() {
+        if (!state.labels) {
+          labelItems.forEach(hideLabelItem);
+          return;
+        }
+
+        const width = viewState.width;
+        const height = viewState.height;
+        const visible = [];
+        const world = new THREE.Vector3();
+
+        labelItems.forEach(function (item) {
+          const def = item.def;
+          item.el.classList.toggle("is-selected", !!def.partId && state.selectedId === def.partId);
+
+          if (def.partId && !isPartVisible(def.partId)) {
+            hideLabelItem(item);
+            return;
+          }
+          if (state.isolatedId && def.partId && state.isolatedId !== def.partId) {
+            hideLabelItem(item);
+            return;
+          }
+
+          def.anchor.getWorldPosition(world);
+          tmpCameraSpace.copy(world).applyMatrix4(camera.matrixWorldInverse);
+          if (tmpCameraSpace.z > -0.15) {
+            hideLabelItem(item);
+            return;
+          }
+          const ndc = world.clone().project(camera);
+          const anchorX = (ndc.x * 0.5 + 0.5) * width;
+          const anchorY = (-ndc.y * 0.5 + 0.5) * height;
+          if (anchorX < -50 || anchorX > width + 50 || anchorY < -50 || anchorY > height + 50) {
+            hideLabelItem(item);
+            return;
+          }
+
+          item.el.style.display = "block";
+          item.width = item.el.offsetWidth;
+          item.height = item.el.offsetHeight;
+          visible.push({ item: item, anchorX: anchorX, anchorY: anchorY });
+        });
+
+        visible.sort(function (a, b) {
+          return b.item.def.priority - a.item.def.priority;
+        });
+
+        const placed = [];
+        visible.forEach(function (entry) {
+          const item = entry.item;
+          const def = item.def;
+          const w = item.width;
+          const h = item.height;
+          let left = clamp(entry.anchorX + def.offset.x - w / 2, 8, Math.max(8, width - w - 8));
+          let top = clamp(entry.anchorY + def.offset.y - h / 2, 8, Math.max(8, height - h - 8));
+          const baseLeft = left;
+          const baseTop = top;
+          const shifts = [0, 16, -16, 32, -32, 48, -48, 64, -64, 80, -80];
+
+          for (let i = 0; i < shifts.length; i += 1) {
+            const candidate = {
+              left: baseLeft,
+              top: clamp(baseTop + shifts[i], 8, Math.max(8, height - h - 8)),
+              width: w,
+              height: h
+            };
+            let conflict = false;
+            for (let k = 0; k < placed.length; k += 1) {
+              if (rectsOverlap(candidate, placed[k])) {
+                conflict = true;
+                break;
+              }
+            }
+            if (!conflict) {
+              left = candidate.left;
+              top = candidate.top;
+              break;
+            }
+          }
+
+          placed.push({ left: left, top: top, width: w, height: h });
+          item.el.style.transform = "translate3d(" + left + "px," + top + "px,0)";
+          item.el.style.zIndex = String(6 + Math.round(def.priority / 20));
+
+          const endX = clamp(entry.anchorX, left, left + w);
+          const endY = clamp(entry.anchorY, top, top + h);
+          item.path.setAttribute("d", "M " + entry.anchorX.toFixed(1) + " " + entry.anchorY.toFixed(1) +
+            " L " + endX.toFixed(1) + " " + endY.toFixed(1));
+          item.path.style.display = "block";
+          item.dot.setAttribute("cx", entry.anchorX.toFixed(1));
+          item.dot.setAttribute("cy", entry.anchorY.toFixed(1));
+          item.dot.style.display = "block";
+        });
+      }
+
+      /* =====================================================================
+         界面状态与应用数据
+         ===================================================================== */
+      const state = {
+        mode: "assembled",
+        explodeProgress: 0,
+        explodeTarget: 0,
+        doorOpen: true,
+        doorProgress: 1,
+        labels: true,
+        guides: true,
+        selectedId: null,
+        hoveredId: null,
+        isolatedId: null,
+        hidden: new Set()
+      };
+
+      const SIM_LIMITS = {
+        left: -3.30,
+        right: 3.30
+      };
+
+      const sim = {
+        positionX: 0,
+        velocity: 0,
+        direction: 1,
+        lastDirection: 1,
+        commandRunning: false,
+        phase: "idle",
+        dwellTimer: 0,
+        dwellDuration: 0.52,
+        nextDirection: 1,
+        rightVisited: false,
+        count: 0,
+        speedScale: 1,
+        baseSpeed: 1.65,
+        acceleration: 2.8,
+        wheelAngle: 0,
+        pressStart: 0,
+        pressStop: 0,
+        pendingStart: false,
+        hasRun: false,
+        lastUiPhase: "",
+        lastUiCount: -1,
+        lastStateText: "",
+        lastRunStatusText: ""
+      };
+
+      const plc = {
+        inputs: { SB1: false, SB2: false, SQ1: false, SQ2: false },
+        outputs: { RUN: true, KM1: false, KM2: false, MOTOR: false }
+      };
+
+      const modeStatus = document.getElementById("mode-status");
+      const partListEl = document.getElementById("part-list");
+      const infoCard = document.getElementById("info-card");
+      const overallCard = document.getElementById("overall-card");
+      const selectionCard = document.getElementById("selection-card");
+      const selectionName = document.getElementById("selection-name");
+      const selectionCode = document.getElementById("selection-code");
+      const selectionKicker = document.getElementById("selection-kicker");
+      const selectionDot = document.getElementById("selection-dot");
+      const selectionDesc = document.getElementById("selection-desc");
+      const selectionGroup = document.getElementById("selection-group");
+      const selectionAssembly = document.getElementById("selection-assembly");
+      const isolateButton = document.getElementById("isolate-button");
+      const isolateStatus = document.getElementById("isolate-status");
+      const isolateText = document.getElementById("isolate-text");
+      const labelsToggle = document.getElementById("labels-toggle");
+      const guidesToggle = document.getElementById("guides-toggle");
+      const labelsState = document.getElementById("labels-state");
+      const guidesState = document.getElementById("guides-state");
+      const doorToggle = document.getElementById("door-toggle");
+      const doorState = document.getElementById("door-state");
+      const showAllButton = document.getElementById("show-all");
+      const hoverTip = document.getElementById("hover-tip");
+
+      const simCard = document.getElementById("sim-card");
+      const simStateEl = document.getElementById("sim-state");
+      const cycleCountEl = document.getElementById("cycle-count");
+      const simStartButton = document.getElementById("sim-start");
+      const simStopButton = document.getElementById("sim-stop");
+      const simResetButton = document.getElementById("sim-reset");
+      const simSpeedInput = document.getElementById("sim-speed-input");
+      const simSpeedValue = document.getElementById("sim-speed-value");
+      const runStatusEl = document.getElementById("run-status");
+      const statusPillEl = document.getElementById("status-pill");
+      const ioRefs = {
+        SB1: document.getElementById("io-sb1"),
+        SB2: document.getElementById("io-sb2"),
+        SQ1: document.getElementById("io-sq1"),
+        SQ2: document.getElementById("io-sq2"),
+        KM1: document.getElementById("io-km1"),
+        KM2: document.getElementById("io-km2")
+      };
+
+      const partRowRefs = new Map();
+      const EYE_VISIBLE = '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M2.2 10s2.8-4.6 7.8-4.6S17.8 10 17.8 10s-2.8 4.6-7.8 4.6S2.2 10 2.2 10Z"/><circle cx="10" cy="10" r="2.2"/></svg>';
+      const EYE_HIDDEN = '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3.2 7.1C2.5 8 2.2 8.8 2.2 10c0 0 2.8 4.6 7.8 4.6 1.3 0 2.5-.4 3.5-.9M7.1 5.9C8 5.4 8.9 5.4 10 5.4c5 0 7.8 4.6 7.8 4.6-.2.4-.6 1-1.2 1.6M4 4l12 12"/></svg>';
+
+      function setSelectedRow(id) {
+        partRowRefs.forEach(function (refs, partId) {
+          const active = partId === id;
+          refs.row.classList.toggle("is-active", active);
+          refs.select.classList.toggle("is-active", active);
+          if (active) refs.select.setAttribute("aria-current", "true");
+          else refs.select.removeAttribute("aria-current");
+        });
+      }
+
+      function updatePartRows() {
+        partRowRefs.forEach(function (refs, id) {
+          const part = parts.get(id);
+          if (!part) return;
+          const effectiveVisible = part.group.visible;
+          const isolatedOut = !!state.isolatedId && state.isolatedId !== id;
+          refs.row.classList.toggle("is-hidden", state.hidden.has(id));
+          refs.row.classList.toggle("is-isolated-out", isolatedOut);
+          refs.eye.setAttribute("aria-pressed", effectiveVisible ? "true" : "false");
+          refs.eye.title = effectiveVisible ? "隐藏：" + part.info.name : "显示：" + part.info.name;
+          refs.eye.setAttribute("aria-label", effectiveVisible ? "隐藏 " + part.info.name : "显示 " + part.info.name);
+          refs.eye.innerHTML = effectiveVisible ? EYE_VISIBLE : EYE_HIDDEN;
+        });
+        setSelectedRow(state.selectedId);
+      }
+
+      function updateIsolateUI() {
+        const isolated = state.isolatedId ? parts.get(state.isolatedId) : null;
+        isolateStatus.hidden = !isolated;
+        if (isolated) {
+          isolateText.textContent = "单独查看：" + isolated.info.name;
+          isolateButton.textContent = "退出单独查看";
+        } else {
+          isolateText.textContent = "";
+          isolateButton.textContent = "单独查看";
+        }
+        if (state.selectedId) {
+          isolateButton.style.display = "";
+        } else {
+          isolateButton.style.display = "none";
+        }
+      }
+
+      function updateInfoCard() {
+        const part = state.selectedId ? parts.get(state.selectedId) : null;
+        if (!part) {
+          infoCard.classList.remove("is-selecting");
+          infoCard.style.removeProperty("--tone");
+          overallCard.hidden = false;
+          selectionCard.hidden = true;
+          return;
+        }
+
+        infoCard.classList.add("is-selecting");
+        infoCard.style.setProperty("--tone", part.info.color);
+        overallCard.hidden = true;
+        selectionCard.hidden = false;
+        selectionName.textContent = part.info.name;
+        selectionCode.textContent = part.info.code;
+        selectionKicker.textContent = "MODEL GROUP / " + part.info.index;
+        selectionDot.style.background = part.info.color;
+        selectionDesc.textContent = part.info.description;
+        selectionGroup.textContent = "第 " + part.info.index + " 组 · " + part.info.tag;
+        selectionAssembly.textContent = part.info.assembly;
+        updateIsolateUI();
+      }
+
+      function clearHover() {
+        if (state.hoveredId) {
+          state.hoveredId = null;
+          applyMaterialHighlight();
+        }
+        hoverTip.classList.remove("is-visible");
+        renderer.domElement.classList.remove("is-hovering");
+      }
+
+      let selectionHelper = null;
+
+      function removeSelectionHelper() {
+        if (!selectionHelper) return;
+        scene.remove(selectionHelper);
+        if (selectionHelper.geometry) selectionHelper.geometry.dispose();
+        if (selectionHelper.material) selectionHelper.material.dispose();
+        selectionHelper = null;
+      }
+
+      function refreshSelectionHelper() {
+        removeSelectionHelper();
+        if (!state.selectedId) return;
+        const part = parts.get(state.selectedId);
+        if (!part || !part.group.visible) return;
+        selectionHelper = new THREE.BoxHelper(part.group, 0xc18a18);
+        selectionHelper.material.transparent = true;
+        selectionHelper.material.opacity = 0.82;
+        selectionHelper.material.depthTest = false;
+        selectionHelper.material.depthWrite = false;
+        selectionHelper.renderOrder = 20;
+        scene.add(selectionHelper);
+      }
+
+      const highlightAmber = new THREE.Color(0xf2a92f);
+      const highlightTeal = new THREE.Color(0x2d7a7d);
+      const highlightTemp = new THREE.Color();
+
+      function applyMaterialHighlight() {
+        const hoverActive = state.hoveredId && !state.selectedId ? state.hoveredId : null;
+        parts.forEach(function (part) {
+          const selected = state.selectedId === part.id;
+          const hovered = hoverActive === part.id;
+          part.materials.forEach(function (entry) {
+            if (!entry.emissive || !entry.material.emissive) return;
+            if (entry.color && entry.material.color) {
+              if (selected) {
+                highlightTemp.copy(entry.color).lerp(highlightAmber, 0.045);
+                entry.material.color.copy(highlightTemp);
+              } else if (hovered) {
+                highlightTemp.copy(entry.color).lerp(highlightTeal, 0.035);
+                entry.material.color.copy(highlightTemp);
+              } else {
+                entry.material.color.copy(entry.color);
+              }
+            }
+            if (selected) {
+              entry.material.emissive.setHex(0xe49a21);
+              entry.material.emissiveIntensity = 0.05;
+            } else if (hovered) {
+              entry.material.emissive.setHex(0x246f72);
+              entry.material.emissiveIntensity = 0.035;
+            } else {
+              entry.material.emissive.copy(entry.emissive);
+              entry.material.emissiveIntensity = entry.emissiveIntensity;
+            }
+          });
+        });
+      }
+
+      function selectPart(id, options) {
+        options = options || {};
+        const part = parts.get(id);
+        if (!part) return;
+
+        if (state.hidden.has(id)) state.hidden.delete(id);
+        if (state.isolatedId) state.isolatedId = id;
+
+        state.selectedId = id;
+        if ((id === "plc" || id === "km1" || id === "km2") && !state.doorOpen) {
+          setDoorOpen(true);
+        }
+        applyGroupVisibility();
+        setSelectedRow(id);
+        updateInfoCard();
+        applyMaterialHighlight();
+        refreshSelectionHelper();
+        updateIsolateUI();
+        if (options.focus) {
+          focusPart(part, false);
+          if (options.source === "list" && window.innerWidth > 980) {
+            requestAnimationFrame(function () {
+              const scroller = document.querySelector(".inspector-scroll");
+              const refs = partRowRefs.get(id);
+              if (!scroller || !refs) return;
+              const scrollerRect = scroller.getBoundingClientRect();
+              const rowRect = refs.row.getBoundingClientRect();
+              if (rowRect.bottom > scrollerRect.bottom - 10) {
+                scroller.scrollTop += rowRect.bottom - scrollerRect.bottom + 10;
+              } else if (rowRect.top < scrollerRect.top + 10) {
+                scroller.scrollTop -= scrollerRect.top - rowRect.top + 10;
+              }
+            });
+          }
+        }
+      }
+
+      function resetSelectionState() {
+        state.selectedId = null;
+        state.isolatedId = null;
+        removeSelectionHelper();
+        updateInfoCard();
+        updatePartRows();
+        applyMaterialHighlight();
+        updateIsolateUI();
+      }
+
+      function clearSelection(options) {
+        options = options || {};
+        if (!state.selectedId && !state.isolatedId) return;
+        resetSelectionState();
+        applyGroupVisibility();
+        if (options.reframe) frameWhole(true);
+      }
+
+      function applyGroupVisibility() {
+        const isolated = state.isolatedId;
+        parts.forEach(function (part, id) {
+          part.group.visible = isolated ? id === isolated : !state.hidden.has(id);
+        });
+
+        if (state.selectedId) {
+          const selectedPart = parts.get(state.selectedId);
+          if (!selectedPart || !selectedPart.group.visible) {
+            state.selectedId = null;
+            state.isolatedId = null;
+            removeSelectionHelper();
+            updateInfoCard();
+            updatePartRows();
+            applyMaterialHighlight();
+            updateIsolateUI();
+            return;
+          }
+        }
+
+        updatePartRows();
+        updateIsolateUI();
+        if (state.selectedId) refreshSelectionHelper();
+        if (state.hoveredId) {
+          const hovered = parts.get(state.hoveredId);
+          if (!hovered || !hovered.group.visible) {
+            state.hoveredId = null;
+            hoverTip.classList.remove("is-visible");
+            applyMaterialHighlight();
+          }
+        }
+      }
+
+      function togglePartVisibility(id) {
+        const part = parts.get(id);
+        if (!part) return;
+        const wasVisible = part.group.visible;
+
+        if (state.isolatedId) {
+          const isolatedId = state.isolatedId;
+          state.isolatedId = null;
+          if (id === isolatedId && wasVisible) {
+            state.hidden.add(id);
+          } else {
+            state.hidden.delete(id);
+          }
+        } else if (state.hidden.has(id)) {
+          state.hidden.delete(id);
+        } else {
+          state.hidden.add(id);
+        }
+
+        if (state.selectedId === id && !parts.get(id).group.visible) {
+          resetSelectionState();
+        }
+
+        applyGroupVisibility();
+        if (state.selectedId && !parts.get(state.selectedId).group.visible) {
+          resetSelectionState();
+        }
+      }
+
+      function showAllParts() {
+        state.hidden.clear();
+        state.isolatedId = null;
+        applyGroupVisibility();
+        updatePartRows();
+        updateIsolateUI();
+        updateInfoCard();
+        frameWhole(true);
+      }
+
+      function toggleIsolate() {
+        if (!state.selectedId) return;
+        if (state.isolatedId === state.selectedId) {
+          state.isolatedId = null;
+          applyGroupVisibility();
+        } else {
+          state.isolatedId = state.selectedId;
+          applyGroupVisibility();
+          focusPart(parts.get(state.selectedId), true);
+        }
+        updateIsolateUI();
+        updateInfoCard();
+      }
+
+      function buildPartList() {
+        PART_ORDER.forEach(function (id) {
+          const info = PART_INFO[id];
+          const row = document.createElement("div");
+          row.className = "part-row";
+          row.dataset.partId = id;
+          row.style.setProperty("--chip", info.color);
+          row.innerHTML =
+            '<button class="part-select" type="button">' +
+              '<span class="part-chip">' + info.index + "</span>" +
+              '<span class="part-main"><span class="part-name">' + info.name + "</span>" +
+              '<span class="part-code">' + info.code + "</span></span>" +
+              '<span class="part-tag">' + info.tag + "</span>" +
+            "</button>" +
+            '<button class="part-eye" type="button" aria-pressed="true"></button>';
+          partListEl.appendChild(row);
+
+          const selectButton = row.querySelector(".part-select");
+          const eyeButton = row.querySelector(".part-eye");
+          partRowRefs.set(id, { row: row, select: selectButton, eye: eyeButton });
+
+          selectButton.addEventListener("click", function () {
+            selectPart(id, { focus: true, source: "list" });
+          });
+          eyeButton.addEventListener("click", function (event) {
+            event.stopPropagation();
+            togglePartVisibility(id);
+          });
+        });
+        updatePartRows();
+      }
+
+      /* =====================================================================
+         场景选择、悬停与工具提示
+         ===================================================================== */
+      const raycaster = new THREE.Raycaster();
+      const pointerNdc = new THREE.Vector2();
+      let labelsAuto = true;
+
+      function pickPartAt(clientX, clientY) {
+        const rect = renderer.domElement.getBoundingClientRect();
+        pointerNdc.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+        pointerNdc.y = -((clientY - rect.top) / rect.height) * 2 + 1;
+        raycaster.setFromCamera(pointerNdc, camera);
+        const intersections = raycaster.intersectObjects(pickables, false);
+        for (let i = 0; i < intersections.length; i += 1) {
+          const hit = intersections[i];
+          if (hit.object.userData.ignorePick) continue;
+          const id = hit.object.userData.partId;
+          if (id && isPartVisible(id)) return id;
+        }
+        return null;
+      }
+
+      function updateHover(clientX, clientY) {
+        const id = pickPartAt(clientX, clientY);
+        if (id !== state.hoveredId) {
+          state.hoveredId = id;
+          applyMaterialHighlight();
+        }
+        renderer.domElement.classList.toggle("is-hovering", !!id);
+        if (id) {
+          const info = parts.get(id).info;
+          const action = id === "startButton" ? " · 单击启动" : (id === "stopButton" ? " · 单击停止" : "");
+          hoverTip.innerHTML = "<b>" + info.name + "</b> · " + info.code + action;
+          const rect = stage.getBoundingClientRect();
+          const x = clamp(clientX - rect.left + 12, 8, Math.max(8, rect.width - 180));
+          const y = clamp(clientY - rect.top + 14, 8, Math.max(8, rect.height - 48));
+          hoverTip.style.left = x + "px";
+          hoverTip.style.top = y + "px";
+          hoverTip.classList.add("is-visible");
+        } else {
+          hoverTip.classList.remove("is-visible");
+        }
+      }
+
+      /* =====================================================================
+         鼠标 / 触摸相机控制
+         ===================================================================== */
+      const pointerMap = new Map();
+      let dragState = null;
+      let pinchState = null;
+      const worldRight = new THREE.Vector3();
+      const worldUp = new THREE.Vector3();
+
+      function clampTargetToModel() {
+        const padX = 4.0;
+        const padZ = 3.5;
+        cameraState.target.x = clamp(cameraState.target.x, wholeBox.min.x - padX, wholeBox.max.x + padX);
+        cameraState.target.y = clamp(cameraState.target.y, -0.2, wholeBox.max.y + 2.5);
+        cameraState.target.z = clamp(cameraState.target.z, wholeBox.min.z - padZ, wholeBox.max.z + padZ);
+      }
+
+      function onPointerDown(event) {
+        if (event.pointerType === "mouse" && event.button !== 0 && event.button !== 2) return;
+        event.preventDefault();
+        cancelCameraTween();
+        canvas.focus({ preventScroll: true });
+        pointerMap.set(event.pointerId, { x: event.clientX, y: event.clientY });
+        if (canvas.setPointerCapture) {
+          try { canvas.setPointerCapture(event.pointerId); } catch (err) { /* noop */ }
+        }
+        hideHoverOnDrag();
+
+        if (pointerMap.size === 2) {
+          const arr = Array.from(pointerMap.values());
+          const distance = Math.hypot(arr[0].x - arr[1].x, arr[0].y - arr[1].y);
+          pinchState = { distance: distance || 1 };
+          dragState = null;
+          canvas.classList.add("is-dragging");
+          return;
+        }
+
+        if (pointerMap.size === 1) {
+          const pan = event.button === 2 || event.shiftKey;
+          dragState = {
+            id: event.pointerId,
+            mode: pan ? "pan" : "rotate",
+            button: event.button,
+            pointerType: event.pointerType,
+            lastX: event.clientX,
+            lastY: event.clientY,
+            startX: event.clientX,
+            startY: event.clientY,
+            moved: false
+          };
+          canvas.classList.add("is-dragging");
+        }
+      }
+
+      function hideHoverOnDrag() {
+        hoverTip.classList.remove("is-visible");
+        renderer.domElement.classList.remove("is-hovering");
+        if (state.hoveredId) {
+          state.hoveredId = null;
+          applyMaterialHighlight();
+        }
+      }
+
+      function onPointerMove(event) {
+        if (pointerMap.has(event.pointerId)) {
+          pointerMap.set(event.pointerId, { x: event.clientX, y: event.clientY });
+        }
+
+        if (pointerMap.size === 2 && pinchState) {
+          const arr = Array.from(pointerMap.values());
+          const distance = Math.hypot(arr[0].x - arr[1].x, arr[0].y - arr[1].y) || 1;
+          const bounds = getZoomBounds();
+          cameraState.radius = clamp(cameraState.radius * (pinchState.distance / distance), bounds.min, bounds.max);
+          pinchState.distance = distance;
+          dragState = null;
+          return;
+        }
+
+        if (!dragState || dragState.id !== event.pointerId) {
+          if (event.pointerType === "mouse") updateHover(event.clientX, event.clientY);
+          return;
+        }
+
+        const dx = event.clientX - dragState.lastX;
+        const dy = event.clientY - dragState.lastY;
+        dragState.lastX = event.clientX;
+        dragState.lastY = event.clientY;
+
+        if (!dragState.moved && Math.hypot(event.clientX - dragState.startX, event.clientY - dragState.startY) > 4) {
+          dragState.moved = true;
+          markCameraCustom();
+        }
+        if (!dragState.moved) return;
+
+        if (dragState.mode === "rotate") {
+          cameraState.theta -= dx * 0.0055;
+          cameraState.phi = clamp(cameraState.phi - dy * 0.0046, 0.13, 1.52);
+        } else {
+          const scale = cameraState.radius * 0.00128;
+          worldRight.setFromMatrixColumn(camera.matrixWorld, 0);
+          worldUp.setFromMatrixColumn(camera.matrixWorld, 1);
+          cameraState.target.addScaledVector(worldRight, -dx * scale);
+          cameraState.target.addScaledVector(worldUp, dy * scale);
+          clampTargetToModel();
+        }
+        dragState.moved = true;
+      }
+
+      function onPointerUp(event) {
+        const wasDrag = dragState && dragState.id === event.pointerId ? dragState : null;
+        pointerMap.delete(event.pointerId);
+        if (pointerMap.size < 2) pinchState = null;
+
+        if (wasDrag) {
+          canvas.classList.remove("is-dragging");
+          if (!wasDrag.moved && (wasDrag.button === 0 || wasDrag.pointerType === "touch")) {
+            const picked = pickPartAt(event.clientX, event.clientY);
+            if (picked) {
+              selectPart(picked, { focus: false, source: "scene" });
+              if (picked === "startButton") requestStart();
+              else if (picked === "stopButton") requestStop();
+            } else {
+              clearSelection({ reframe: false });
+            }
+          }
+          dragState = null;
+        }
+
+        if (pointerMap.size === 0) {
+          canvas.classList.remove("is-dragging");
+          dragState = null;
+        }
+      }
+
+      function onPointerCancel(event) {
+        pointerMap.delete(event.pointerId);
+        pinchState = null;
+        dragState = null;
+        canvas.classList.remove("is-dragging");
+      }
+
+      function onWheel(event) {
+        event.preventDefault();
+        cancelCameraTween();
+        const bounds = getZoomBounds();
+        const factor = Math.exp(clamp(event.deltaY, -120, 120) * 0.00125);
+        cameraState.radius = clamp(cameraState.radius * factor, bounds.min, bounds.max);
+      }
+
+      canvas.addEventListener("pointerdown", onPointerDown);
+      canvas.addEventListener("pointermove", onPointerMove);
+      canvas.addEventListener("pointerup", onPointerUp);
+      canvas.addEventListener("pointercancel", onPointerCancel);
+      canvas.addEventListener("pointerleave", function (event) {
+        if (!dragState) {
+          clearHover();
+        }
+      });
+      canvas.addEventListener("wheel", onWheel, { passive: false });
+      canvas.addEventListener("contextmenu", function (event) { event.preventDefault(); });
+
+      /* =====================================================================
+         界面控制与业务动作
+         ===================================================================== */
+      function setMode(mode) {
+        if (mode !== "assembled" && mode !== "exploded") return;
+        if (mode === "exploded") {
+          resetSimulationForSplit();
+        }
+        state.mode = mode;
+        state.explodeTarget = mode === "exploded" ? 1 : 0;
+        stage.classList.toggle("is-exploded", mode === "exploded");
+        modeStatus.textContent = mode === "exploded" ? "零部件拆分" : "整体装配";
+        document.querySelectorAll("[data-mode]").forEach(function (button) {
+          const active = button.getAttribute("data-mode") === mode;
+          button.classList.toggle("is-active", active);
+          button.setAttribute("aria-pressed", active ? "true" : "false");
+        });
+        updateSimUI(true);
+        frameWhole(true);
+      }
+
+      function setLabelsEnabled(enabled, manual) {
+        state.labels = !!enabled;
+        if (manual) labelsAuto = false;
+        labelsToggle.setAttribute("aria-pressed", enabled ? "true" : "false");
+        labelsState.textContent = enabled ? "开" : "关";
+        annotationLayer.style.display = enabled ? "block" : "none";
+      }
+
+      function maybeAutoLabels() {
+        if (!labelsAuto) return;
+        const shouldShow = viewState.width >= 680;
+        if (state.labels !== shouldShow) {
+          setLabelsEnabled(shouldShow, false);
+        }
+      }
+
+      function setGuidesEnabled(enabled) {
+        state.guides = !!enabled;
+        guidesToggle.setAttribute("aria-pressed", enabled ? "true" : "false");
+        guidesState.textContent = enabled ? "开" : "关";
+      }
+
+      function setDoorOpen(open) {
+        state.doorOpen = !!open;
+        doorToggle.setAttribute("aria-pressed", open ? "true" : "false");
+        doorState.textContent = open ? "已打开" : "已关闭";
+      }
+
+      /* =====================================================================
+         PLC 自动往返逻辑与运行视觉
+         ===================================================================== */
+      function pressSimButton(which) {
+        if (which === "start") sim.pressStart = 0.24;
+        else sim.pressStop = 0.24;
+      }
+
+      function syncPlcOutputs() {
+        const outputActive = state.mode === "assembled" &&
+          sim.commandRunning &&
+          (sim.phase === "forward" || sim.phase === "reverse");
+        plc.outputs.RUN = true;
+        plc.outputs.KM1 = outputActive && sim.direction > 0;
+        plc.outputs.KM2 = outputActive && sim.direction < 0;
+        plc.outputs.MOTOR = plc.outputs.KM1 || plc.outputs.KM2;
+        setSimLed("km1Led", plc.outputs.KM1, 0x66e08f);
+        setSimLed("km2Led", plc.outputs.KM2, 0xf0a35a);
+      }
+
+      function beginRun() {
+        if (sim.commandRunning) return;
+        sim.pendingStart = false;
+        sim.commandRunning = true;
+        sim.hasRun = true;
+        sim.dwellTimer = 0;
+
+        if (sim.positionX >= SIM_LIMITS.right - 0.004) sim.direction = -1;
+        else if (sim.positionX <= SIM_LIMITS.left + 0.004) sim.direction = 1;
+        else sim.direction = sim.lastDirection || 1;
+
+        sim.lastDirection = sim.direction;
+        sim.phase = sim.direction > 0 ? "forward" : "reverse";
+        sim.pressStart = 0.24;
+        syncPlcOutputs();
+        updateSimUI(true);
+      }
+
+      function requestStart() {
+        pressSimButton("start");
+        if (sim.commandRunning) {
+          updateSimUI(true);
+          return;
+        }
+        if (state.mode !== "assembled" || state.explodeProgress > 0.02) {
+          sim.pendingStart = true;
+          if (state.mode !== "assembled") setMode("assembled");
+          updateSimUI(true);
+          return;
+        }
+        beginRun();
+      }
+
+      function requestStop() {
+        pressSimButton("stop");
+        sim.pendingStart = false;
+        if (!sim.commandRunning) {
+          if (Math.abs(sim.velocity) <= 0.001) sim.phase = "idle";
+          syncPlcOutputs();
+          updateSimUI(true);
+          return;
+        }
+        sim.commandRunning = false;
+        sim.dwellTimer = 0;
+        if (sim.phase === "dwellRight" || sim.phase === "dwellLeft") {
+          sim.phase = "idle";
+          sim.velocity = 0;
+        } else if (Math.abs(sim.velocity) > 0.001) {
+          sim.phase = "stopping";
+        } else {
+          sim.phase = "idle";
+        }
+        syncPlcOutputs();
+        updateSimUI(true);
+      }
+
+      function resetCycleCount() {
+        sim.count = 0;
+        sim.rightVisited = false;
+        sim.lastUiCount = -1;
+        cycleCountEl.classList.remove("is-bumped");
+        updateSimUI(true);
+      }
+
+      function resetSimulationForSplit() {
+        sim.commandRunning = false;
+        sim.pendingStart = false;
+        sim.velocity = 0;
+        sim.positionX = 0;
+        sim.direction = 1;
+        sim.lastDirection = 1;
+        sim.phase = "idle";
+        sim.dwellTimer = 0;
+        sim.rightVisited = false;
+        sim.pressStart = 0;
+        sim.pressStop = 0;
+        syncPlcOutputs();
+        updateSimUI(true);
+      }
+
+      function bumpCycleCount() {
+        cycleCountEl.classList.remove("is-bumped");
+        void cycleCountEl.offsetWidth;
+        cycleCountEl.classList.add("is-bumped");
+        window.setTimeout(function () {
+          cycleCountEl.classList.remove("is-bumped");
+        }, 360);
+      }
+
+      function getUiPhase() {
+        if (state.mode === "exploded") return "idle";
+        if (sim.pendingStart) return "idle";
+        if (sim.phase === "dwellRight" || sim.phase === "dwellLeft") return "dwell";
+        if (sim.phase === "forward" || sim.phase === "reverse") return sim.phase;
+        if (sim.phase === "stopping" || Math.abs(sim.velocity) > 0.01) return "stopping";
+        return "idle";
+      }
+
+      function getSimStateText() {
+        if (state.mode === "exploded") return "拆分查看 · 已停止";
+        if (sim.pendingStart) return "等待装配后启动";
+        if (sim.phase === "dwellRight") return "右端 SQ1 换向";
+        if (sim.phase === "dwellLeft") return "左端 SQ2 计数";
+        if (sim.phase === "forward") return "正转运行 · KM1";
+        if (sim.phase === "reverse") return "反转运行 · KM2";
+        if (sim.phase === "stopping" || Math.abs(sim.velocity) > 0.01) return "减速停止中";
+        if (sim.commandRunning) return "准备运行";
+        return sim.hasRun || sim.count > 0 ? "已停止" : "待机";
+      }
+
+      function getRunStatusText() {
+        const countText = String(sim.count).padStart(2, "0") + " 次";
+        if (state.mode === "exploded") return "拆分查看 · 停止";
+        if (sim.pendingStart) return "等待装配启动";
+        if (sim.phase === "dwellRight") return "右端换向 · " + countText;
+        if (sim.phase === "dwellLeft") return "左端计数 · " + countText;
+        if (sim.phase === "forward") return "正转 KM1 · " + countText;
+        if (sim.phase === "reverse") return "反转 KM2 · " + countText;
+        if (sim.phase === "stopping" || Math.abs(sim.velocity) > 0.01) return "减速停止 · " + countText;
+        return (sim.hasRun ? "已停止" : "待机") + " · " + countText;
+      }
+
+      function updateSimUI(force) {
+        const phase = getUiPhase();
+        const stateText = getSimStateText();
+        const runText = getRunStatusText();
+
+        if (simCard.dataset.phase !== phase) simCard.dataset.phase = phase;
+        if (force || sim.lastStateText !== stateText) {
+          simStateEl.textContent = stateText;
+          sim.lastStateText = stateText;
+        }
+        if (force || sim.lastRunStatusText !== runText) {
+          runStatusEl.textContent = runText;
+          sim.lastRunStatusText = runText;
+        }
+        if (force || sim.lastUiCount !== sim.count) {
+          cycleCountEl.textContent = String(sim.count).padStart(2, "0");
+          sim.lastUiCount = sim.count;
+        }
+
+        statusPillEl.classList.toggle("is-running", phase === "forward" || phase === "reverse");
+        statusPillEl.classList.toggle("is-dwelling", phase === "dwell");
+        statusPillEl.classList.toggle("is-braking", phase === "stopping");
+
+        simStartButton.disabled = sim.commandRunning || sim.pendingStart;
+        simStopButton.disabled = !sim.commandRunning && !sim.pendingStart;
+
+        Object.keys(ioRefs).forEach(function (key) {
+          ioRefs[key].classList.toggle("is-on", !!plc.inputs[key] || !!plc.outputs[key]);
+        });
+        simSpeedValue.textContent = sim.speedScale.toFixed(1) + "×";
+      }
+
+      function setSimLed(role, active, activeColor) {
+        const material = simMaterialRefs[role];
+        if (!material) return;
+        material.color.setHex(active ? activeColor : 0x4c5d5a);
+      }
+
+      function updateLimitLever(partId, active, dt) {
+        const part = parts.get(partId);
+        if (!part) return;
+        const lever = part.group.userData.leverPivot;
+        const inward = part.group.userData.leverInward;
+        if (!lever) return;
+        const target = active ? -0.34 * inward : 0;
+        lever.rotation.z += (target - lever.rotation.z) * Math.min(1, dt * 17);
+      }
+
+      function updatePushButtonCaps() {
+        const startCap = startButtonGroup.userData.cap;
+        const stopCap = stopButtonGroup.userData.cap;
+        const startPress = sim.pressStart > 0 ? Math.sin(Math.PI * clamp(sim.pressStart / 0.24, 0, 1)) : 0;
+        const stopPress = sim.pressStop > 0 ? Math.sin(Math.PI * clamp(sim.pressStop / 0.24, 0, 1)) : 0;
+        if (startCap) startCap.position.x = startButtonGroup.userData.capBaseX - startPress * 0.028;
+        if (stopCap) stopCap.position.x = stopButtonGroup.userData.capBaseX - stopPress * 0.028;
+      }
+
+      function updateSimulation(dt) {
+        const previousX = sim.positionX;
+        sim.pressStart = Math.max(0, sim.pressStart - dt);
+        sim.pressStop = Math.max(0, sim.pressStop - dt);
+
+        if (state.mode === "assembled" && sim.pendingStart && state.explodeProgress < 0.012) {
+          beginRun();
+        }
+
+        if (state.mode === "assembled" && sim.commandRunning) {
+          if (sim.phase === "dwellRight" || sim.phase === "dwellLeft") {
+            sim.velocity = 0;
+            sim.dwellTimer = Math.max(0, sim.dwellTimer - dt);
+            if (sim.dwellTimer <= 0) {
+              sim.direction = sim.nextDirection;
+              sim.lastDirection = sim.direction;
+              sim.phase = sim.direction > 0 ? "forward" : "reverse";
+            }
+          } else if (sim.phase === "forward" || sim.phase === "reverse") {
+            const maxSpeed = sim.baseSpeed * sim.speedScale;
+            sim.velocity = Math.min(maxSpeed, sim.velocity + sim.acceleration * dt);
+            let nextX = sim.positionX + sim.direction * sim.velocity * dt;
+
+            if (sim.direction > 0 && nextX >= SIM_LIMITS.right) {
+              sim.positionX = SIM_LIMITS.right;
+              sim.velocity = 0;
+              sim.rightVisited = true;
+              sim.phase = "dwellRight";
+              sim.nextDirection = -1;
+              sim.dwellTimer = sim.dwellDuration;
+            } else if (sim.direction < 0 && nextX <= SIM_LIMITS.left) {
+              sim.positionX = SIM_LIMITS.left;
+              sim.velocity = 0;
+              if (sim.rightVisited) {
+                sim.count += 1;
+                sim.rightVisited = false;
+                bumpCycleCount();
+              }
+              sim.phase = "dwellLeft";
+              sim.nextDirection = 1;
+              sim.dwellTimer = sim.dwellDuration;
+            } else {
+              sim.positionX = nextX;
+            }
+          }
+        } else if (state.mode === "assembled" && Math.abs(sim.velocity) > 0.001) {
+          sim.velocity = Math.max(0, sim.velocity - sim.acceleration * dt);
+          let nextX = sim.positionX + sim.direction * sim.velocity * dt;
+
+          if (sim.direction > 0 && nextX >= SIM_LIMITS.right) {
+            sim.positionX = SIM_LIMITS.right;
+            sim.rightVisited = true;
+            sim.velocity = 0;
+            sim.phase = "idle";
+          } else if (sim.direction < 0 && nextX <= SIM_LIMITS.left) {
+            sim.positionX = SIM_LIMITS.left;
+            if (sim.rightVisited) {
+              sim.count += 1;
+              sim.rightVisited = false;
+              bumpCycleCount();
+            }
+            sim.velocity = 0;
+            sim.phase = "idle";
+          } else {
+            sim.positionX = nextX;
+            if (sim.velocity <= 0.001) {
+              sim.velocity = 0;
+              sim.phase = "idle";
+            }
+          }
+        }
+
+        sim.positionX = clamp(sim.positionX, SIM_LIMITS.left, SIM_LIMITS.right);
+
+        plc.inputs.SQ1 = state.mode === "assembled" && sim.positionX >= SIM_LIMITS.right - 0.035;
+        plc.inputs.SQ2 = state.mode === "assembled" && sim.positionX <= SIM_LIMITS.left + 0.035;
+        plc.inputs.SB1 = sim.pressStart > 0.01;
+        plc.inputs.SB2 = sim.pressStop > 0.01;
+
+        syncPlcOutputs();
+
+        sim.wheelAngle -= (sim.positionX - previousX) / CONFIG.wheel.radius;
+        const spinGroups = wheelsGroup.userData.spinGroups || [];
+        spinGroups.forEach(function (wheelPivot) {
+          wheelPivot.rotation.z = sim.wheelAngle;
+        });
+
+        updateLimitLever("sq1", plc.inputs.SQ1, dt);
+        updateLimitLever("sq2", plc.inputs.SQ2, dt);
+        updatePushButtonCaps();
+
+        setSimLed("sq1Led", plc.inputs.SQ1, 0xf0c355);
+        setSimLed("sq2Led", plc.inputs.SQ2, 0xf0c355);
+        setSimLed("plcRun", true, 0x66e08f);
+
+        updateSimUI(false);
+      }
+
+      simStartButton.addEventListener("click", requestStart);
+      simStopButton.addEventListener("click", requestStop);
+      simResetButton.addEventListener("click", resetCycleCount);
+      simSpeedInput.addEventListener("input", function () {
+        sim.speedScale = Number(simSpeedInput.value) || 1;
+        simSpeedValue.textContent = sim.speedScale.toFixed(1) + "×";
+      });
+
+      document.querySelectorAll("[data-mode]").forEach(function (button) {
+        button.addEventListener("click", function () {
+          setMode(button.getAttribute("data-mode"));
+        });
+      });
+
+      document.querySelectorAll("[data-view]").forEach(function (button) {
+        button.addEventListener("click", function () {
+          const view = button.getAttribute("data-view");
+          goToView(view, true);
+        });
+      });
+
+      document.getElementById("reset-view").addEventListener("click", function () {
+        goToView("iso", true);
+      });
+      document.getElementById("reset-view-2").addEventListener("click", function () {
+        goToView("iso", true);
+      });
+
+      labelsToggle.addEventListener("click", function () {
+        setLabelsEnabled(!state.labels, true);
+      });
+      guidesToggle.addEventListener("click", function () {
+        setGuidesEnabled(!state.guides);
+      });
+      doorToggle.addEventListener("click", function () {
+        setDoorOpen(!state.doorOpen);
+      });
+      showAllButton.addEventListener("click", showAllParts);
+      isolateButton.addEventListener("click", toggleIsolate);
+      document.getElementById("exit-isolate").addEventListener("click", function () {
+        state.isolatedId = null;
+        applyGroupVisibility();
+        updateInfoCard();
+      });
+      document.getElementById("cancel-selection").addEventListener("click", function () {
+        clearSelection({ reframe: true });
+      });
+
+      /* =====================================================================
+         尺寸响应与初始化
+         ===================================================================== */
+      function resizeStage() {
+        const w = Math.max(1, stage.clientWidth);
+        const h = Math.max(1, stage.clientHeight);
+        const changed = w !== viewState.width || h !== viewState.height;
+        viewState.width = w;
+        viewState.height = h;
+        if (!changed && w > 0 && h > 0) {
+          leaderSvg.setAttribute("viewBox", "0 0 " + w + " " + h);
+          return;
+        }
+
+        renderer.setSize(w, h, false);
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
+        leaderSvg.setAttribute("viewBox", "0 0 " + w + " " + h);
+        maybeAutoLabels();
+
+        if (viewState.ready) {
+          const activeBox = getActiveBox();
+          const center = activeBox.getCenter(new THREE.Vector3());
+          const radius = fitRadiusForBox(activeBox, cameraState.theta, cameraState.phi, 0.84);
+          const bounds = getZoomBounds();
+          cameraState.target.copy(center);
+          cameraState.radius = clamp(radius, bounds.min, bounds.max);
+          cameraTween = null;
+          applyCamera();
+        }
+      }
+
+      buildGuides();
+      buildLabels();
+      buildPartList();
+      setLabelsEnabled(true, false);
+      setGuidesEnabled(true);
+      setDoorOpen(true);
+      updateInfoCard();
+      updatePartRows();
+      updateIsolateUI();
+      updateSimUI(true);
+
+      resizeStage();
+      maybeAutoLabels();
+      goToView("iso", false);
+      viewState.ready = true;
+
+      if (window.ResizeObserver) {
+        const observer = new ResizeObserver(function () {
+          resizeStage();
+        });
+        observer.observe(stage);
+      }
+      window.addEventListener("resize", resizeStage);
+
+      const clock = new THREE.Clock();
+      let firstFrame = true;
+
+      function updateMotion(dt) {
+        const speed = reducedMotion ? 1 : 1 - Math.exp(-dt * 8.2);
+        state.explodeProgress += (state.explodeTarget - state.explodeProgress) * speed;
+        if (Math.abs(state.explodeTarget - state.explodeProgress) < 0.0006) {
+          state.explodeProgress = state.explodeTarget;
+        }
+
+        const doorSpeed = reducedMotion ? 1 : 1 - Math.exp(-dt * 9.5);
+        state.doorProgress += ((state.doorOpen ? 1 : 0) - state.doorProgress) * doorSpeed;
+        if (Math.abs((state.doorOpen ? 1 : 0) - state.doorProgress) < 0.0006) {
+          state.doorProgress = state.doorOpen ? 1 : 0;
+        }
+        doorGroup.rotation.y = CONFIG.cabinetDoor.openAngle * state.doorProgress;
+      }
+
+      window.__LESSON_FILM_MANUAL = true;
+function animate() {
+        requestAnimationFrame(animate);
+        const rawDt = clock.getDelta();
+        const dt = Math.min(rawDt, 0.05);
+
+        updateCameraTween(Math.min(rawDt, 0.25));
+        applyCamera();
+        updateMotion(dt);
+        if (!window.__LESSON_FILM_MANUAL) updateSimulation(dt);
+        setMoverState(state.explodeProgress, state.mode === "assembled" ? sim.positionX : 0);
+        scene.updateMatrixWorld(true);
+
+        if (selectionHelper) selectionHelper.update();
+        updateGuides();
+        updateLabels();
+        renderer.render(scene, camera);
+
+        if (firstFrame && viewState.width > 20) {
+          firstFrame = false;
+          loading.classList.add("is-hidden");
+        }
+      }
+
+      canvas.addEventListener("webglcontextlost", function (event) {
+        event.preventDefault();
+        showFatalError(
+          "WEBGL CONTEXT LOST",
+          "三维渲染上下文已丢失",
+          "浏览器暂时无法继续绘制三维场景。请刷新页面；如果反复出现，请检查硬件加速或显卡驱动。"
+        );
+      });
+
+      window.TROLLEY_MODEL = {
+        scene: scene,
+        camera: camera,
+        modelRoot: modelRoot,
+        parts: parts,
+        config: CONFIG,
+        state: state,
+        cameraState: cameraState,
+        getDebug: function () {
+          return {
+            theta: cameraState.theta,
+            phi: cameraState.phi,
+            radius: cameraState.radius,
+            target: cameraState.target.toArray(),
+            tween: !!cameraTween,
+            tweenElapsed: cameraTween ? cameraTween.elapsed : null,
+            explodeProgress: state.explodeProgress,
+            doorProgress: state.doorProgress,
+            sim: {
+              positionX: sim.positionX,
+              velocity: sim.velocity,
+              direction: sim.direction,
+              commandRunning: sim.commandRunning,
+              phase: sim.phase,
+              dwellTimer: sim.dwellTimer,
+              rightVisited: sim.rightVisited,
+              count: sim.count,
+              pendingStart: sim.pendingStart
+            },
+            plc: {
+              inputs: Object.assign({}, plc.inputs),
+              outputs: Object.assign({}, plc.outputs)
+            }
+          };
+        },
+        sim: sim,
+        plc: plc,
+        requestStart: requestStart,
+        requestStop: requestStop,
+        resetCycleCount: resetCycleCount, stepSimulation: updateSimulation,
+        advanceSimulation: function (seconds, step) {
+          const safeStep = step || 1 / 60;
+          let elapsed = 0;
+          while (elapsed < seconds) {
+            const chunk = Math.min(safeStep, seconds - elapsed);
+            updateSimulation(chunk);
+            elapsed += chunk;
+          }
+          setMoverState(state.explodeProgress, state.mode === "assembled" ? sim.positionX : 0);
+          scene.updateMatrixWorld(true);
+          if (selectionHelper) selectionHelper.update();
+          updateLabels();
+          renderer.render(scene, camera);
+          return { sim: Object.assign({}, sim), inputs: Object.assign({}, plc.inputs), outputs: Object.assign({}, plc.outputs) };
+        },
+        selectPart: selectPart,
+        setMode: setMode,
+        goToView: goToView
+      };
+
+      animate();
+    })();
+  </script>
+  <script src="./animation.js"></script>
+</body>
+</html>

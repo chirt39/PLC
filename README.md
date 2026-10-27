@@ -19,3 +19,8 @@
 
 - `water-level-3d/index.html`：水位数据链单文件三维模型，Three.js 与样式已内嵌，可直接静态托管。
 
+
+## 台车自动往返控制 3D 教学动画
+
+- `lessons/control/trolley-auto-animation/index.html`：视频播放页，并链接到网页动画版。
+- 页面只收录成品 MP4、网页动画所需的 HTML/CSS/JS 和封面；未收录渲染调试脚本、临时截图及重复源模型。
