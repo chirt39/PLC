@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+  <rect width="1920" height="1080" fill="#f8f9f4"/>
+  <g font-family="Noto Sans SC, Microsoft YaHei, sans-serif">
+    <text x="96" y="78" font-size="28" fill="#657b80">PLC 应用技术 · 微动画 16</text>
+    <text x="96" y="190" font-size="68" font-weight="700" fill="#183c45">PLC上升沿检测R_TRIG计数</text>
+    <text x="96" y="260" font-size="34" fill="#657b80">输入上升沿 → 单周期脉冲 → CTU 加 1</text>
+    <rect x="96" y="330" width="1320" height="460" rx="28" fill="#fff" stroke="#dfe7e2" stroke-width="4"/>
+    <text x="150" y="405" font-size="30" fill="#dc6430">输入 I0.0</text>
+    <path d="M300 485H470V425H720V485H910V425H1160V485H1360" stroke="#dc6430" stroke-width="11" fill="none" stroke-linejoin="round"/>
+    <text x="150" y="575" font-size="30" fill="#527da0">R_TRIG.Q</text>
+    <path d="M300 620H470V555H500V620H910V555H940V620H1360" stroke="#527da0" stroke-width="11" fill="none" stroke-linejoin="round"/>
+    <text x="150" y="715" font-size="30" fill="#008579">计数值仅用数字显示</text>
+    <rect x="1480" y="330" width="344" height="460" rx="28" fill="#fff" stroke="#dfe7e2" stroke-width="4"/>
+    <text x="1652" y="420" text-anchor="middle" font-size="30" fill="#657b80">计数值</text>
+    <circle cx="1652" cy="540" r="100" fill="#e4f3ec"/>
+    <text x="1652" y="575" text-anchor="middle" font-size="100" font-weight="600" fill="#008579">2</text>
+    <text x="1652" y="700" text-anchor="middle" font-size="28" fill="#657b80">共计 2 次</text>
+    <rect x="96" y="875" width="1728" height="115" rx="20" fill="#183c45"/>
+    <text x="960" y="948" text-anchor="middle" font-size="38" fill="#fff">下降沿会显示，但 R_TRIG 不输出脉冲、CTU 不加数</text>
+  </g>
+</svg>

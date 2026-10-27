@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="PLC应用技术教学微动画：上升沿、下降沿、计数器与输入滤波。">
+  <title>PLC 应用技术 · 原理微动画</title>
+  <link rel="stylesheet" href="./assets/fonts.css">
+  <link rel="stylesheet" href="./assets/style.css">
+</head>
+<body>
+  <div class="shell">
+    <header class="masthead">
+      <a class="brand" href="./index.html"><span class="brandmark">PLC</span>应用技术 · 学习资源</a>
+      <span class="meta">课程学习资源</span>
+    </header>
+    <main>
+      <section class="hero">
+        <h1>PLC 原理微动画</h1>
+        <p>每段围绕一个问题，观察变化，再说明原因。</p>
+      </section>
+      <section class="lessons" aria-label="微动画列表">
+        <a class="lesson-card" href="./lessons/counters/ctu-direct.html">
+          <div class="preview"><img src="./media/ctu-direct-poster.svg" alt="CTU直接计数：输入直接接入CU，输入上升沿时计数增加" width="1920" height="1080"></div>
+          <div class="card-body"><div class="card-meta"><span>15 / CTU 直接计数</span><span>15 秒 · 无声字幕</span></div><h2>PLC上升沿检测CTU直接计数</h2><p>标准 CTU 计数，为什么不需要额外的上升沿脉冲？</p><div class="card-cta">开始观察<span class="arrow" aria-hidden="true">↗</span></div></div>
+        </a>
+        <a class="lesson-card" href="./lessons/counters/rtrig-counter.html">
+          <div class="preview"><img src="./media/rtrig-counter-poster.svg" alt="R_TRIG输出单扫描周期脉冲并接入CTU计数" width="1920" height="1080"></div>
+          <div class="card-body"><div class="card-meta"><span>16 / R_TRIG 脉冲计数</span><span>15 秒 · 无声字幕</span></div><h2>PLC上升沿检测R_TRIG计数</h2><p>R_TRIG 的脉冲如何送入 CTU？按下和松开分别发生什么？</p><div class="card-cta">开始观察<span class="arrow" aria-hidden="true">↗</span></div></div>
+        </a>
+        <a class="lesson-card" href="./lessons/control/contacts.html">
+          <div class="preview"><img src="./media/contacts-coils-poster.svg" alt="常开常闭逻辑触点接通时驱动线圈得电" width="1920" height="1080"></div>
+          <div class="card-body"><div class="card-meta"><span>12 / 触点与线圈</span><span>28 秒 · 无声字幕</span></div><h2>常开/常闭触点与线圈逻辑</h2><p>用中文说明输入状态、判断支路和线圈得电的关系，留足时间观察。</p><div class="card-cta">开始观察<span class="arrow" aria-hidden="true">↗</span></div></div>
+        </a>
+        <a class="lesson-card" href="./lessons/control/jog.html">
+          <div class="preview"><img src="./media/jog-poster.svg" alt="点动与长动控制：先观察松手即停，再观察自锁保持" width="1920" height="1080"></div>
+          <div class="card-body"><div class="card-meta"><span>13 / 电动机控制</span><span>30 秒 · 无声字幕</span></div><h2>点动与长动控制</h2><p>按钮松开后，电动机什么时候停止，什么时候继续运行？</p><div class="card-cta">连续观看两段<span class="arrow" aria-hidden="true">↗</span></div></div>
+        </a>
+        <a class="lesson-card" href="./lessons/control/trolley.html">
+          <div class="preview"><img src="./media/trolley-auto-reciprocating-poster.svg" alt="台车在左右限位之间自动往返，PLC切换正转与反转输出" width="1920" height="1080"></div>
+          <div class="card-body"><div class="card-meta"><span>17 / 综合控制案例</span><span>36 秒 · 无声字幕</span></div><h2>案例策划：台车自动往返控制</h2><p>观察两端限位如何触发换向，以及正反转互锁和停止逻辑。</p><div class="card-cta">开始观察<span class="arrow" aria-hidden="true">↗</span></div></div>
+        </a>
+        <a class="lesson-card" href="./lessons/control/water-level.html">
+          <div class="preview"><img src="./media/water-level-data-chain-poster.svg" alt="水位变送器、PLC模拟量采集、工程值换算和高低阈值控制水泵的数据链" width="1920" height="1080"></div>
+          <div class="card-body"><div class="card-meta"><span>18 / 综合控制案例</span><span>48 秒 · 无声字幕</span></div><h2>案例策划：水位数据链</h2><p>从 4—20 mA 变送信号到 PLC 工程值，再看高低水位阈值如何控制水泵。</p><div class="card-cta">开始观察<span class="arrow" aria-hidden="true">↗</span></div></div>
+        </a>
+        <a class="lesson-card" href="./lessons/control/trolley-3d.html">
+          <div class="preview"><img src="./media/trolley-3d-poster.png" alt="台车自动往返控制三维动画关键帧预览" width="1920" height="1080"></div>
+          <div class="card-body"><div class="card-meta"><span>19 / 三维案例</span><span>教学动画 · 交互模型</span></div><h2>台车自动往返控制：3D动画与模型</h2><p>先观看三维自动往返动画，再旋转、拆分模型查看结构与控制部件。</p><div class="card-cta">观看动画与模型<span class="arrow" aria-hidden="true">↗</span></div></div>
+        </a>
+        <a class="lesson-card" href="./trolley-prototype/index.html">
+          <div class="preview"><img src="./media/trolley-3d-poster.png" alt="台车自动往返控制交互式三维原型预览" width="1920" height="1080"></div>
+          <div class="card-body"><div class="card-meta"><span>20 / 交互式原型</span><span>三维结构 · PLC控制</span></div><h2>台车自动往返控制：交互式三维原型</h2><p>进入独立三维原型，查看设备结构并体验台车自动往返控制过程。</p><div class="card-cta">打开交互式原型<span class="arrow" aria-hidden="true">↗</span></div></div>
+        </a>
+      </section>
+    </main>
+    <footer class="foot"><span>《PLC 应用技术》课程资源</span><span>2D 原理演示 · 中文字幕 · 1920 × 1080</span></footer>
+  </div>
+</body>
+</html>

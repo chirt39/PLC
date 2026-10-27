@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+  <rect width="1920" height="1080" fill="#f8f9f4"/>
+  <g font-family="Noto Sans SC, Microsoft YaHei, sans-serif">
+    <text x="96" y="78" font-size="28" fill="#657b80">PLC 应用技术 · 微动画 13 · 30 秒</text>
+    <text x="96" y="190" font-size="70" font-weight="700" fill="#183c45">点动与长动控制</text>
+    <text x="96" y="260" font-size="34" fill="#657b80">一段动画，依次看懂“松手即停”和“自锁保持”</text>
+    <rect x="96" y="320" width="810" height="500" rx="28" fill="#fff" stroke="#dfe7e2" stroke-width="4"/>
+    <rect x="1014" y="320" width="810" height="500" rx="28" fill="#fff" stroke="#dfe7e2" stroke-width="4"/>
+    <text x="150" y="390" font-size="34" font-weight="600" fill="#183c45">第一段 · 点动（0—10秒）</text>
+    <text x="1068" y="390" font-size="34" font-weight="600" fill="#183c45">第二段 · 长动（10—30秒）</text>
+    <text x="150" y="445" font-size="28" fill="#657b80">SB1 按住才运行</text>
+    <path d="M190 520V700M190 610H340M460 610H590M710 610H810" stroke="#008579" stroke-width="9" fill="none" stroke-linecap="round"/>
+    <path d="M376 560V660M424 560V660" stroke="#008579" stroke-width="9"/>
+    <text x="400" y="700" text-anchor="middle" font-size="27" fill="#657b80">SB1 常开</text>
+    <text x="650" y="625" text-anchor="middle" font-size="44" fill="#008579">( KM )</text>
+    <text x="1068" y="445" font-size="28" fill="#657b80">辅助常开触点与启动触点并联，形成自锁</text>
+    <path d="M1080 520V700M1080 610H1180M1300 610H1360M1360 520V700M1360 520H1430M1550 520H1630M1360 700H1430M1550 700H1630M1630 520V700M1630 610H1710" stroke="#008579" stroke-width="9" fill="none" stroke-linecap="round"/>
+    <path d="M1222 560V660M1270 560V660M1466 470V570M1514 470V570M1466 650V750M1514 650V750" stroke="#008579" stroke-width="9"/>
+    <path d="M1210 660L1282 560" stroke="#008579" stroke-width="7"/>
+    <text x="1246" y="740" text-anchor="middle" font-size="23" fill="#657b80">SB0 停止</text>
+    <text x="1490" y="465" text-anchor="middle" font-size="24" fill="#657b80">SB1 启动</text>
+    <text x="1490" y="780" text-anchor="middle" font-size="22" fill="#657b80">KM 辅助触点</text>
+    <text x="1750" y="625" text-anchor="middle" font-size="38" fill="#008579">KM</text>
+    <rect x="96" y="875" width="1728" height="115" rx="20" fill="#183c45"/>
+    <text x="960" y="948" text-anchor="middle" font-size="38" fill="#fff">前10秒：点动松手即停　→　后20秒：看懂长动自锁过程</text>
+  </g>
+</svg>

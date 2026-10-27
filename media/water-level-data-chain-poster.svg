@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+  <rect width="1920" height="1080" fill="#f8f9f4"/>
+  <g font-family="Noto Sans SC, Microsoft YaHei, sans-serif">
+    <text x="96" y="78" font-size="28" fill="#657b80">PLC 应用技术 · 微动画 18 · 48 秒</text>
+    <text x="96" y="185" font-size="66" font-weight="700" fill="#183c45">案例策划：水位数据链</text>
+    <text x="96" y="250" font-size="32" fill="#657b80">从现场水位到 PLC 数据，再到水泵控制</text>
+    <rect x="96" y="310" width="1728" height="515" rx="28" fill="#fff" stroke="#dfe7e2" stroke-width="4"/>
+    <text x="150" y="385" font-size="32" font-weight="600" fill="#183c45">现场水位与信号处理</text>
+    <rect x="250" y="440" width="360" height="300" fill="#fbfcfa" stroke="#82938b" stroke-width="7"/>
+    <rect x="257" y="560" width="346" height="173" fill="#a8d9e8"/>
+    <path d="M258 560H602" stroke="#5da9c0" stroke-width="7"/>
+    <path d="M250 620H610M250 500H610" stroke="#527da0" stroke-width="3" stroke-dasharray="12 10"/>
+    <text x="628" y="627" font-size="23" fill="#527da0">低位 4 m 启动</text>
+    <text x="628" y="507" font-size="23" fill="#dc6430">高位 8 m 停止</text>
+    <text x="430" y="420" text-anchor="middle" font-size="28" fill="#183c45">储水箱 · 当前水位</text>
+    <rect x="176" y="680" width="100" height="90" rx="15" fill="#e4f3ec" stroke="#008579" stroke-width="5"/>
+    <circle cx="226" cy="725" r="27" fill="#008579"/><path d="M214 710L240 725L214 740Z" fill="#fff"/>
+    <text x="226" y="805" text-anchor="middle" font-size="23" fill="#183c45">补水泵</text>
+    <rect x="710" y="480" width="300" height="235" rx="20" fill="#f8faf8" stroke="#008579" stroke-width="5"/>
+    <text x="860" y="535" text-anchor="middle" font-size="29" font-weight="600" fill="#183c45">PLC · AI0</text>
+    <text x="755" y="590" font-size="25" fill="#657b80">输入电流</text><text x="965" y="590" text-anchor="end" font-size="28" fill="#527da0">12.0 mA</text>
+    <text x="755" y="640" font-size="25" fill="#657b80">AI 原始值</text><text x="965" y="640" text-anchor="end" font-size="28" fill="#008579">5000</text>
+    <text x="755" y="690" font-size="25" fill="#657b80">换算水位</text><text x="965" y="690" text-anchor="end" font-size="28" fill="#008579">5.0 m</text>
+    <path d="M585 700H660V600H710" fill="none" stroke="#527da0" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M689 585L710 600L689 615" fill="none" stroke="#527da0" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="650" y="665" text-anchor="middle" font-size="24" fill="#527da0">4—20 mA</text>
+    <rect x="1110" y="410" width="630" height="86" rx="16" fill="#fae8d8" stroke="#dc6430" stroke-width="4"/>
+    <text x="1150" y="464" font-size="27" font-weight="600" fill="#183c45">液位变送器</text><text x="1695" y="464" text-anchor="end" font-size="27" fill="#dc6430">水位 → 电流</text>
+    <path d="M1425 498V520" stroke="#008579" stroke-width="7"/>
+    <path d="M1410 509L1425 526L1440 509" fill="none" stroke="#008579" stroke-width="7"/>
+    <rect x="1110" y="530" width="630" height="86" rx="16" fill="#e4f3ec" stroke="#008579" stroke-width="4"/>
+    <text x="1150" y="584" font-size="27" font-weight="600" fill="#183c45">AI 采集与量程缩放</text><text x="1695" y="584" text-anchor="end" font-size="27" fill="#008579">原始值 → 米</text>
+    <path d="M1425 618V640" stroke="#008579" stroke-width="7"/>
+    <path d="M1410 629L1425 646L1440 629" fill="none" stroke="#008579" stroke-width="7"/>
+    <rect x="1110" y="650" width="630" height="86" rx="16" fill="#e4f3ec" stroke="#008579" stroke-width="4"/>
+    <text x="1150" y="704" font-size="27" font-weight="600" fill="#183c45">高低水位阈值</text><text x="1695" y="704" text-anchor="end" font-size="27" fill="#008579">低位启泵 · 高位停泵</text>
+    <rect x="96" y="880" width="1728" height="112" rx="20" fill="#183c45"/>
+    <text x="960" y="950" text-anchor="middle" font-size="37" fill="#fff">4—20 mA → AI 原始值 → 水位工程值 → 阈值判断 → 水泵输出</text>
+  </g>
+</svg>

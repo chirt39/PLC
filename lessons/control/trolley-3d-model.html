@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>台车自动往返控制｜三维结构原型</title>
+  <style>
+    :root{color-scheme:dark;--bg:#101823;--panel:#172331;--panel2:#1d2c3c;--line:#31465b;--text:#e8f0f7;--muted:#9eb0c2;--blue:#62b7ff;--gold:#ffc75f}
+    *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:"Microsoft YaHei","Noto Sans SC",system-ui,sans-serif}
+    #app{height:100%;display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:12px;padding:12px}
+    #stage{position:relative;min-width:0;min-height:0;overflow:hidden;border:1px solid #27394b;border-radius:16px;background:radial-gradient(ellipse at 54% 42%,#203246 0,#142131 51%,#101823 100%)}
+    #view{position:absolute;inset:0;width:100%;height:100%;display:block}
+    #runtimeError{position:absolute;z-index:5;left:50%;top:50%;transform:translate(-50%,-50%);width:min(440px,calc(100% - 32px));padding:18px;border:1px solid #b36363;border-radius:12px;background:#321f25;color:#ffe4e4;font-size:13px;line-height:1.7;box-shadow:0 14px 45px #0008}
+    .topbar{position:absolute;z-index:2;left:18px;right:18px;top:16px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;pointer-events:none}
+    .titlebox{padding:10px 13px;border:1px solid #344b61;border-radius:12px;background:#101a26d9;backdrop-filter:blur(8px)}
+    .titlebox h1{font-size:18px;margin:0 0 4px;font-weight:700;letter-spacing:.02em}.titlebox p{margin:0;color:var(--muted);font-size:12px}
+    .modebar{display:flex;gap:7px;pointer-events:auto}.modebar button,.view-tools button{border:1px solid #3b5269;color:var(--text);background:#172536e8;border-radius:9px;padding:9px 12px;font:inherit;font-size:12px;cursor:pointer;transition:.18s}
+    button:hover{border-color:var(--blue);background:#20364a}.modebar button.active{color:#07131f;background:var(--blue);border-color:var(--blue);font-weight:700}
+    .view-tools{position:absolute;z-index:2;left:18px;bottom:16px;display:flex;gap:7px}.view-tools button{padding:8px 10px}
+    .hint{position:absolute;z-index:2;right:18px;bottom:18px;max-width:280px;color:#bdcbd8;background:#101a26d9;border:1px solid #34495e;border-radius:10px;padding:9px 11px;font-size:11px;line-height:1.55;pointer-events:none}
+    #side{min-height:0;display:flex;flex-direction:column;gap:10px;overflow:auto;padding-right:2px}
+    .card{border:1px solid #2a3d50;border-radius:14px;background:linear-gradient(145deg,#1a2938,#152230);padding:14px}
+    .card h2{font-size:14px;margin:0 0 10px}.card p{font-size:12px;line-height:1.65;color:#c1cfdb;margin:0}
+    #selectedName{color:var(--blue);font-size:15px;font-weight:700;margin-bottom:6px}#selectedNote{min-height:38px}
+    #parts{display:grid;grid-template-columns:1fr;gap:6px}
+    .part-row{display:grid;grid-template-columns:minmax(0,1fr) 34px;gap:6px}.part{display:flex;align-items:center;gap:7px;text-align:left;min-width:0;border:1px solid #34495e;background:#192838;color:#dce7f0;border-radius:9px;padding:8px 9px;font:inherit;font-size:11px;cursor:pointer}
+    .part:hover,.part.active{border-color:var(--blue);background:#20384c}.swatch{width:9px;height:9px;border-radius:50%;flex:0 0 auto;background:var(--c)}.part span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .part-eye,.smallbtn{border:1px solid #34495e;background:#192838;color:#cbd9e5;border-radius:8px;cursor:pointer;font:inherit;font-size:10px}.part-eye:hover,.smallbtn:hover{border-color:var(--blue);background:#20384c}.part-eye.off{color:#738598;background:#111b26}.control-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}.control-grid .smallbtn{padding:8px 6px}.control-grid .smallbtn.active{border-color:var(--blue);color:var(--blue);background:#18324a}.control-grid .wide{grid-column:1/-1}.view-presets{display:flex;gap:6px;margin-top:8px}.view-presets .smallbtn{flex:1;padding:7px 4px}
+    .runstate{display:flex;align-items:center;gap:8px;padding:9px 10px;border:1px solid #34495e;border-radius:9px;background:#111d29;font-size:12px}.runled{width:10px;height:10px;border-radius:50%;background:#788899;box-shadow:0 0 0 3px #78889922}.runled.moving{background:#65d39a;box-shadow:0 0 0 3px #65d39a2e}.runled.dwell{background:#ffc75f;box-shadow:0 0 0 3px #ffc75f2e}.runmeta{display:flex;justify-content:space-between;gap:8px;margin:9px 0;color:var(--muted);font-size:11px}.trackmeter{height:7px;background:#0b151f;border:1px solid #31465b;border-radius:99px;position:relative;margin:11px 1px}.trackmeter .end{position:absolute;top:-4px;width:2px;height:13px;background:#ffc75f}.trackmeter .end.left{left:0}.trackmeter .end.right{right:0}.trackmeter .cartdot{position:absolute;top:50%;width:13px;height:13px;border-radius:50%;background:#62b7ff;border:2px solid #e8f0f7;transform:translate(-50%,-50%);left:50%;transition:left .08s linear}.runbuttons{display:grid;grid-template-columns:1fr 1fr;gap:7px}.runbuttons .wide{grid-column:1/-1}.runbuttons button{border:1px solid #3b5269;color:var(--text);background:#172536;border-radius:9px;padding:9px 7px;font:inherit;font-size:11px;cursor:pointer}.runbuttons button:hover{border-color:var(--blue);background:#20364a}.runbuttons #startRun{background:#185b43;border-color:#2b8b65}.runbuttons #stopRun{background:#662e34;border-color:#9a4a51}.speedrow{display:flex;align-items:center;gap:9px;margin-top:10px;font-size:11px;color:var(--muted)}.speedrow input{flex:1;accent-color:var(--blue)}
+    .runhelp{font-size:10px!important;color:var(--muted)!important;margin:9px 0 0!important;line-height:1.55!important}
+    .demobuttons{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:9px}.demobuttons button{border:1px solid #3b5269;color:#dce8f1;background:#1a2b3b;border-radius:8px;padding:7px 4px;font:inherit;font-size:10px;cursor:pointer}.demobuttons button:hover{border-color:var(--blue);background:#20384c}.demometer{height:4px;background:#0b151f;border-radius:9px;margin-top:7px;overflow:hidden}.demometer i{display:block;width:0;height:100%;background:#62b7ff}
+    body.cinematic,body.cinematic #app{width:100vw;height:100vh;overflow:hidden}body.cinematic #app{display:block;padding:0;gap:0}body.cinematic #stage{position:absolute;inset:0;width:100vw;height:100vh;border:0;border-radius:0;background:#101a25}body.cinematic #side,body.cinematic .topbar,body.cinematic .hint{display:none!important}#filmTitle{display:none}
+    body.cinematic #filmTitle{display:block;position:absolute;z-index:4;left:50%;top:12%;transform:translateX(-50%);padding:13px 24px;border:1px solid #8aa7bd66;border-radius:12px;background:#101a25bd;color:#f2f7fb;font-size:28px;font-weight:700;letter-spacing:.05em;opacity:0;transition:opacity .35s;pointer-events:none}
+    .relation{display:grid;gap:8px}.relation div{border-left:2px solid #4678a4;padding-left:9px;color:#c4d2de;font-size:11px;line-height:1.55}
+    .legend{display:flex;gap:9px;flex-wrap:wrap;margin-top:9px}.legend span{font-size:10px;color:var(--muted)}.legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px;background:var(--c)}
+    @media(max-width:900px){#app{grid-template-columns:minmax(0,1fr) 280px;gap:8px;padding:8px}.hint{max-width:190px}.titlebox h1{font-size:15px}}
+    @media(max-width:680px){html,body{overflow:auto}#app{height:auto;min-height:100%;display:flex;flex-direction:column;padding:8px}#stage{height:62vh;min-height:410px;flex:0 0 auto}#side{overflow:visible;display:grid;grid-template-columns:1fr 1fr}.card:first-child{grid-column:1/-1}.topbar{left:10px;right:10px;top:10px;flex-direction:column}.titlebox{padding:8px 10px}.titlebox p{font-size:10px}.modebar button{padding:7px 8px;font-size:10px}.view-tools{left:10px;bottom:10px}.hint{right:10px;bottom:10px;font-size:10px;max-width:150px}}
+  </style>
+  <script type="importmap">
+    {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}
+  </script>
+</head>
+<body>
+<main id="app">
+  <section id="stage" aria-label="台车自动往返控制三维结构模型">
+    <canvas id="view"></canvas>
+    <div id="runtimeError" hidden role="alert">三维视图启动失败。请检查网络连接，并使用支持 WebGL 的现代浏览器重新打开此页面。</div>
+    <div id="filmTitle">台车自动往返控制</div>
+    <div class="topbar">
+      <div class="titlebox"><h1>台车自动往返控制｜三维教学模型</h1><p>结构查看与自动往返演示 · 可旋转、拆分、选择部件</p></div>
+      <div class="modebar"><button id="assembled" class="active">整体装配</button><button id="exploded">零部件拆分</button></div>
+    </div>
+    <div class="hint">左键拖动旋转 · 滚轮缩放 · 右键拖动平移<br>点选部件或使用右侧列表查看</div>
+  </section>
+  <aside id="side">
+    <section class="card"><h2>部件说明</h2><div id="selectedName">整体装置</div><p id="selectedNote">台车位于两条平行导轨之间。两端限位开关用于标示行程端点，控制柜内标出 PLC、KM1 和 KM2。</p></section>
+    <section class="card"><h2>模型操作</h2><div class="control-grid">
+      <button id="showAll" class="smallbtn">显示全部部件</button><button id="isolate" class="smallbtn">单独查看所选</button>
+      <button id="labelsToggle" class="smallbtn active">隐藏部件标注</button><button id="guidesToggle" class="smallbtn">显示装配引导线</button>
+      <button id="doorToggle" class="smallbtn wide">打开控制柜柜门</button>
+    </div><div class="view-presets"><button id="isoView" class="smallbtn">等轴测</button><button id="frontView" class="smallbtn">正视图</button><button id="topView" class="smallbtn">俯视图</button><button id="resetView" class="smallbtn">恢复视角</button></div></section>
+    <section class="card"><h2>台车自动往返</h2><div class="runstate"><i id="runLed" class="runled"></i><span id="runText">停止｜待机</span></div><div class="runmeta"><span id="directionText">方向：—</span><span id="positionText">位置：0.0</span></div><div class="trackmeter"><i class="end left"></i><i class="end right"></i><i id="cartDot" class="cartdot"></i></div><div class="runbuttons"><button id="startRun">启动自动往返</button><button id="stopRun">停止</button><button id="resetRun" class="wide">复位到左端原点 SQ2</button></div><label class="speedrow">运行速度 <input id="speedRange" type="range" min="0.6" max="3.6" step="0.2" value="2.0"><span id="speedValue">2.0</span></label><p class="runhelp">启动后向右运行；触发 SQ1 后换向向左，触发 SQ2 后再次换向。按“停止”立即停车。</p><div class="demobuttons"><button id="demoPlay">播放教学动画</button><button id="demoPause">暂停</button><button id="demoReplay">重新播放</button></div><div class="demometer"><i id="demoProgress"></i></div></section>
+    <section class="card"><h2>模型部件（眼睛按钮控制显示）</h2><div id="parts"></div></section>
+    <section class="card"><h2>装配关系</h2><div class="relation">
+      <div>车轮与台车车架连接，车轮踏面落在两条导轨上。</div>
+      <div>驱动电动机安装在台车底部，经简化传动机构连接驱动轮轴。</div>
+      <div>SQ2 位于左端原点位置，SQ1 位于右端前限位位置；台车端部挡片表示触发位置。</div>
+      <div>控制柜设置在轨道旁；柜门示意 PLC、正转接触器 KM1、反转接触器 KM2，以及启动和停止按钮。</div>
+    </div><div class="legend"><span><i style="--c:#62b7ff"></i>台车/运动方向</span><span><i style="--c:#ffc75f"></i>限位开关</span><span><i style="--c:#74d6a1"></i>控制元件</span></div></section>
+  </aside>
+</main>
+<script>
+function showModelError(){const box=document.querySelector('#runtimeError');if(box)box.hidden=false}
+window.addEventListener('error',showModelError);window.addEventListener('unhandledrejection',showModelError);
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const params=new URLSearchParams(location.search),renderMode=params.get('render')==='1',autoFilm=params.get('animation')==='1',cinematicMode=renderMode||autoFilm;
+if(cinematicMode)document.body.classList.add('cinematic');
+const stage=document.querySelector('#stage'), canvas=document.querySelector('#view');
+const scene=new THREE.Scene(); scene.background=cinematicMode?new THREE.Color('#101a25'):null;
+const camera=new THREE.PerspectiveCamera(37,1,.1,120); const homePosition=new THREE.Vector3(18,15,21), homeTarget=new THREE.Vector3(0,.75,1.0);
+camera.position.copy(homePosition);
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true}); renderer.setPixelRatio(Math.min(devicePixelRatio,2)); renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap; renderer.outputColorSpace=THREE.SRGBColorSpace; renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.12;
+const controls=new OrbitControls(camera,canvas); controls.target.copy(homeTarget); controls.enableDamping=true; controls.dampingFactor=.075; controls.minDistance=9; controls.maxDistance=42; controls.maxPolarAngle=Math.PI*.49;controls.enabled=!cinematicMode;
+scene.add(new THREE.HemisphereLight(0xcfe6ff,0x34404a,2.0));
+const keyLight=new THREE.DirectionalLight(0xfff1d2,3.0); keyLight.position.set(-7,14,10); keyLight.castShadow=true; keyLight.shadow.mapSize.set(2048,2048); keyLight.shadow.camera.left=-15; keyLight.shadow.camera.right=15; keyLight.shadow.camera.top=13; keyLight.shadow.camera.bottom=-10; scene.add(keyLight);
+const fillLight=new THREE.DirectionalLight(0x7abfff,1.15); fillLight.position.set(8,8,-8); scene.add(fillLight);
+
+const mats={
+  base:new THREE.MeshStandardMaterial({color:0x536577,metalness:.62,roughness:.47}), rail:new THREE.MeshStandardMaterial({color:0x9aa8b2,metalness:.82,roughness:.28}), darkMetal:new THREE.MeshStandardMaterial({color:0x394856,metalness:.72,roughness:.32}),
+  frame:new THREE.MeshStandardMaterial({color:0x3e88bd,metalness:.48,roughness:.34}), platform:new THREE.MeshStandardMaterial({color:0x87a1b4,metalness:.5,roughness:.38}), rubber:new THREE.MeshStandardMaterial({color:0x20272e,roughness:.75}),
+  motor:new THREE.MeshStandardMaterial({color:0x4c9c78,metalness:.42,roughness:.38}), motorDark:new THREE.MeshStandardMaterial({color:0x315e4b,metalness:.5,roughness:.4}), gold:new THREE.MeshStandardMaterial({color:0xe8a93e,metalness:.55,roughness:.34}),
+  sensor:new THREE.MeshStandardMaterial({color:0xf0b84e,metalness:.35,roughness:.38}), red:new THREE.MeshStandardMaterial({color:0xdd594f,roughness:.34}), cabinet:new THREE.MeshStandardMaterial({color:0xd3dde2,metalness:.18,roughness:.42}),
+  control:new THREE.MeshStandardMaterial({color:0x54a985,metalness:.28,roughness:.4}), white:new THREE.MeshStandardMaterial({color:0xeaf1f4,roughness:.42}), blue:new THREE.MeshStandardMaterial({color:0x4c94d0,metalness:.25,roughness:.38}), amber:new THREE.MeshStandardMaterial({color:0xf2ad4a,metalness:.25,roughness:.38}), glass:new THREE.MeshStandardMaterial({color:0x294357,metalness:.2,roughness:.24})
+};
+const modelRoot=new THREE.Group();scene.add(modelRoot); const selectable=new Map(); const explodeOffsets=new Map(); const initialPositions=new Map();
+const labelObjects=[];
+const defs=[
+  ['base','底座','承托导轨与整套装置的基础结构，带横向加强筋。','#536577'],['rails','平行导轨','两条导轨为台车车轮提供支承和运行路径。','#9aa8b2'],['cart','台车车架与载物平台','车架连接车轮并承载上方平台；端部挡片用于触发行程限位。','#3e88bd'],['wheels','四个车轮','车轮安装在车架下方，轮缘与踏面沿导轨运行；运行时车轮同步转动。','#20272e'],['motor','驱动电动机','电动机安装在台车底部；台车运行时冷却风扇随动旋转。','#4c9c78'],['transmission','简化传动机构','联轴器、减速箱与传动轴把电动机输出传到驱动轮轴。','#e8a93e'],['sq2','左端原点限位 SQ2','安装在轨道左端；台车到达原点时触发，指示灯亮起并使运行方向切换。','#f0b84e'],['sq1','右端前限位 SQ1','安装在轨道右端；台车到达前限位时触发，指示灯亮起并使运行方向切换。','#f0b84e'],['cabinet','控制柜柜体','设备安装在轨道旁；柜内布置 PLC、接触器和端子结构。','#d3dde2'],['door','控制柜柜门','可单独选择；点击“打开控制柜柜门”可查看柜内元件。','#eaf1f4'],['plc','PLC','安装在柜内 DIN 导轨上，作为控制柜中的 PLC 结构示意。','#4c94d0'],['km1','正转接触器 KM1','安装在柜内 DIN 导轨上，作为正转接触器结构示意。','#54a985'],['km2','反转接触器 KM2','安装在柜内 DIN 导轨上，作为反转接触器结构示意。','#f2ad4a'],['start','启动按钮','启动台车自动往返；模型柜门上的绿色按钮也可直接点击。','#54a985'],['stop','停止按钮','立即停止台车；模型柜门上的红色按钮也可直接点击。','#dd594f']
+];
+function group(id,parent=modelRoot){const g=new THREE.Group();g.name=id;parent.add(g);selectable.set(id,g);return g}
+function box(parent,name,w,h,d,material,x,y,z,bevel=false){let geometry=new THREE.BoxGeometry(w,h,d);const mesh=new THREE.Mesh(geometry,material);mesh.name=name;mesh.position.set(x,y,z);mesh.castShadow=true;mesh.receiveShadow=true;parent.add(mesh);return mesh}
+function cyl(parent,name,r1,r2,length,material,x,y,z,axis='y',segments=28){const mesh=new THREE.Mesh(new THREE.CylinderGeometry(r1,r2,length,segments),material);mesh.name=name;mesh.position.set(x,y,z);if(axis==='x')mesh.rotation.z=Math.PI/2; if(axis==='z')mesh.rotation.x=Math.PI/2;mesh.castShadow=true;mesh.receiveShadow=true;parent.add(mesh);return mesh}
+function line(parent,a,b,color=0xd3e1ec,r=.026){const v=new THREE.Vector3().subVectors(b,a);const mesh=new THREE.Mesh(new THREE.CylinderGeometry(r,r,v.length(),10),new THREE.MeshStandardMaterial({color,metalness:.5,roughness:.38}));mesh.position.copy(a).add(b).multiplyScalar(.5);mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),v.normalize());mesh.castShadow=true;parent.add(mesh);return mesh}
+function labelTexture(text,bg='#153044',fg='#eff8ff'){
+  const c=document.createElement('canvas');c.width=512;c.height=112;const ctx=c.getContext('2d');ctx.fillStyle=bg;ctx.beginPath();ctx.roundRect(3,3,506,106,22);ctx.fill();ctx.strokeStyle='#a8c5db';ctx.lineWidth=3;ctx.stroke();ctx.fillStyle=fg;ctx.font='bold 38px "Microsoft YaHei",sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(text,256,57);const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;return t;
+}
+function spriteLabel(parent,text,pos,scale= [2.9,.63],bg){const m=new THREE.SpriteMaterial({map:labelTexture(text,bg),depthTest:false,depthWrite:false});const s=new THREE.Sprite(m);s.position.set(...pos);s.scale.set(...scale,1);s.renderOrder=8;parent.add(s);labelObjects.push(s);return s}
+function arrow(parent,start,end,color=0x62b7ff){const dir=new THREE.Vector3().subVectors(end,start).normalize(),len=start.distanceTo(end);const a=new THREE.ArrowHelper(dir,start,len,color,.55,.3);parent.add(a);return a}
+
+// 底座与导轨
+const base=group('base');box(base,'承载底座',14.7,.48,4.7,mats.base,0,-.1,0);
+for(let i=0;i<5;i++){box(base,`底座横向加强筋 ${i+1}`,.16,.52,4.78,mats.darkMetal,-6.1+i*3.05,-.1,0)}
+const rails=group('rails');for(const z of [-1.35,1.35]){box(rails,z<0?'后侧导轨':'前侧导轨',14.0,.24,.34,mats.rail,0,.25,z);box(rails,'导轨支承垫块',13.65,.18,.64,mats.darkMetal,0,.05,z)}
+// 台车车架与平台、触发挡片
+const cart=group('cart');
+for(const z of [-1.02,1.02])box(cart,'车架纵梁',2.65,.22,.22,mats.frame,0,.91,z);
+for(const x of [-1.08,1.08])box(cart,'车架横梁',.22,.22,2.25,mats.frame,x,.91,0);
+box(cart,'载物平台',2.8,.16,2.48,mats.platform,0,1.2,0);
+for(const x of [-.9,.9])for(const z of [-.78,.78])cyl(cart,'平台固定螺栓',.065,.065,.045,mats.gold,x,1.3,z,'y',16);
+// 车架两端的竖直触发片
+box(cart,'限位触发挡片（左端）',.11,.48,.24,mats.gold,-1.34,1.02,1.83);
+box(cart,'限位触发挡片（右端）',.11,.48,.24,mats.gold,1.34,1.02,1.83);
+// 车轮：车轴沿 Z 方向，轮面滚动方向沿 X 方向
+const wheels=group('wheels'),wheelRotors=[];for(const x of [-.92,.92])for(const z of [-1.34,1.34]){const rotor=new THREE.Group();rotor.name='车轮转子';rotor.position.set(x,.62,z);wheels.add(rotor);wheelRotors.push(rotor);cyl(rotor,'车轮轮胎',.30,.30,.19,mats.rubber,0,0,0,'z',32);cyl(rotor,'轮缘',.345,.345,.065,mats.rail,0,0,-.12,'z',28);cyl(rotor,'轮缘',.345,.345,.065,mats.rail,0,0,.12,'z',28);cyl(rotor,'轮毂',.155,.155,.205,mats.rail,0,0,0,'z',24);cyl(rotor,'轮轴端盖',.07,.07,.22,mats.gold,0,0,0,'z',18)}
+// 驱动电动机与传动机构
+const motor=group('motor');cyl(motor,'电动机外壳',.25,.25,.9,mats.motor,.82,.62,-.18,'z',32);cyl(motor,'电动机后端盖',.265,.265,.12,mats.motorDark,.82,.62,-.69,'z');cyl(motor,'电动机风罩',.24,.24,.18,mats.darkMetal,.82,.62,-.72,'z');
+box(motor,'电动机接线盒',.32,.16,.26,mats.motorDark,.82,.88,-.22);for(let i=0;i<5;i++)box(motor,'电动机散热筋',.055,.38,.075,mats.motorDark,.61+i*.105,.64,-.2);
+const fanRotor=new THREE.Group();fanRotor.name='电动机冷却风扇';fanRotor.position.set(.82,.62,-.84);motor.add(fanRotor);cyl(fanRotor,'风扇轮毂',.07,.07,.045,mats.gold,0,0,0,'z',18);for(let i=0;i<4;i++){const blade=box(fanRotor,'风扇叶片',.055,.24,.035,mats.rail,0,.12,.025);blade.rotation.z=i*Math.PI/2}
+const transmission=group('transmission');box(transmission,'减速箱',.62,.54,.58,mats.gold,.82,.63,.62);cyl(transmission,'电机联轴器',.15,.15,.25,mats.darkMetal,.82,.62,.31,'z');cyl(transmission,'传动轴',.075,.075,.68,mats.rail,.82,.62,1.05,'z',20);cyl(transmission,'驱动轮轴套',.13,.13,.18,mats.gold,.82,.62,1.34,'z');
+// 两端限位开关：小型外壳、滚轮摆臂及触轮
+function makeLimit(id,title,x){const g=group(id);const z=1.88;box(g,`${title} 底座`,.65,.11,.48,mats.darkMetal,x,.34,z);box(g,`${title} 开关盒`,.34,.42,.33,mats.sensor,x,.61,z);box(g,`${title} 盖板`,.28,.06,.28,mats.gold,x,.85,z);line(g,new THREE.Vector3(x,.82,z),new THREE.Vector3(x,.99,z+.25),0xb9c5cc,.025);cyl(g,`${title} 滚轮`,.11,.11,.09,mats.darkMetal,x,1.02,z+.27,'z',20);const led=new THREE.Mesh(new THREE.SphereGeometry(.065,16,12),new THREE.MeshStandardMaterial({color:0x4e5962,emissive:0x111820}));led.name=`${title} 状态指示灯`;led.position.set(x+.2,.62,z+.19);g.add(led);g.userData.led=led;spriteLabel(g,title,[x,1.55,z+.05],[3.2,.62],id==='sq1'?'#523d19':'#233d55');return g}
+makeLimit('sq2','左端原点限位 SQ2',-6.35);makeLimit('sq1','右端前限位 SQ1',6.35);
+// 控制柜采用开放式柜体；柜门关闭时遮住内部，打开后可查看柜内元件。
+const cabinet=group('cabinet'),cabX=3.85,cabY=1.27,cabZ=3.18;
+box(cabinet,'控制柜背板',2.04,2.52,.12,mats.cabinet,cabX,cabY,cabZ-.43);
+for(const x of [cabX-1.03,cabX+1.03])box(cabinet,'控制柜侧板',.12,2.7,1.05,mats.cabinet,x,cabY,cabZ);
+for(const y of [cabY-1.29,cabY+1.29])box(cabinet,'控制柜顶板或底板',2.18,.12,1.05,mats.cabinet,cabX,y,cabZ);
+for(const x of [cabX-.72,cabX+.72])box(cabinet,'控制柜支脚',.18,.36,.68,mats.darkMetal,x,cabY-1.48,cabZ-.05);
+// 柜内安装板、DIN 导轨和线槽
+box(cabinet,'柜内安装板',1.78,2.26,.07,mats.white,cabX,cabY,cabZ-.31);
+for(const y of [cabY+.47,cabY-.27,cabY-1.01])box(cabinet,'DIN 导轨',1.62,.055,.09,mats.rail,cabX,y,cabZ+.05);
+box(cabinet,'左侧线槽',.18,1.9,.16,mats.blue,cabX-.78,cabY,cabZ+.02);box(cabinet,'右侧线槽',.18,1.9,.16,mats.blue,cabX+.78,cabY,cabZ+.02);
+for(let i=0;i<6;i++)box(cabinet,'端子排模块',.18,.24,.22,mats.control,cabX-.53+i*.19,cabY-.91,cabZ+.12);
+
+function faceLabel(parent,text,x,y,z,w,h,color){const p=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({map:labelTexture(text,color,'#f3f8fc'),transparent:true,depthTest:true}));p.position.set(x,y,z);parent.add(p);labelObjects.push(p);return p}
+function cabinetDevice(id,title,subtitle,y,color,bodyMat){const g=group(id);box(g,`${title} 安装底座`,1.02,.48,.30,bodyMat,cabX,y,cabZ+.17);box(g,`${title} 正面模块`,.82,.34,.12,color,cabX,y,cabZ+.37);for(let i=0;i<4;i++){box(g,`${title} 接线端子`,.13,.09,.14,mats.darkMetal,cabX-.36+i*.24,y+.25,cabZ+.23);box(g,`${title} 端子标记`,.09,.035,.025,mats.white,cabX-.36+i*.24,y+.25,cabZ+.31)}faceLabel(g,subtitle,cabX,y,cabZ+.445,.98,.28,id==='plc'?'#1b5b89':id==='km1'?'#27694f':'#79501e');if(id!=='plc')for(let i=0;i<3;i++)cyl(g,`${title} 触点观察窗`,.045,.045,.025,mats.gold,cabX-.25+i*.25,y-.12,cabZ+.445,'z',14);const lamp=new THREE.Mesh(new THREE.SphereGeometry(.055,16,12),new THREE.MeshStandardMaterial({color:0x4e5962,emissive:0x111820}));lamp.name=`${title} 状态灯`;lamp.position.set(cabX+.42,y+.21,cabZ+.45);g.add(lamp);g.userData.statusLamp=lamp;return g}
+cabinetDevice('plc','PLC','PLC 可编程控制器',cabY+.77,mats.blue,mats.control);
+cabinetDevice('km1','KM1 正转接触器','KM1 正转接触器',cabY+.03,mats.control,mats.darkMetal);
+cabinetDevice('km2','KM2 反转接触器','KM2 反转接触器',cabY-.71,mats.amber,mats.darkMetal);
+
+// 柜门以左侧铰链为轴；按钮和标牌随门一起开合。
+const door=group('door',cabinet);door.position.set(cabX-1.02,cabY,cabZ+.51);
+const physicalButtonCaps=new Map();
+box(door,'控制柜柜门面板',1.92,2.43,.10,mats.white,.96,0,.04);
+box(door,'柜门观察窗',1.58,.24,.035,mats.glass,.96,1.0,.11);
+box(door,'柜门把手',.07,.42,.10,mats.darkMetal,1.76,.05,.14);
+faceLabel(door,'控制柜',.96,1.12,.105,.88,.20,'#25435b');
+function doorButton(id,title,x,color,bg){const g=group(id,door);cyl(g,`${title} 按钮座`,.20,.20,.12,mats.darkMetal,x,-.91,.18,'z',24);const cap=cyl(g,`${title} 按钮帽`,.145,.145,.15,color,x,-.91,.31,'z',28);g.userData.buttonCap=cap;physicalButtonCaps.set(id,cap);spriteLabel(g,title,[x,-.58,.36],[1.22,.3],bg);return g}
+doorButton('start','启动按钮',.57,mats.control,'#22533f');doorButton('stop','停止按钮',1.35,mats.red,'#612d34');
+// 双向箭头标识自动往返路径；当前方向另由运行状态区显示。
+const direction=new THREE.Group();scene.add(direction);arrow(direction,new THREE.Vector3(-4.8,.58,-2.05),new THREE.Vector3(4.8,.58,-2.05));arrow(direction,new THREE.Vector3(4.8,.58,-2.05),new THREE.Vector3(-4.8,.58,-2.05));spriteLabel(direction,'台车运行方向  ↔',[0,.95,-2.05],[3.5,.55],'#173d5c');
+// 地面基准网格只作轻微空间参照
+const grid=new THREE.GridHelper(24,24,0x395069,0x26394d);grid.position.y=-.36;grid.material.transparent=true;grid.material.opacity=.28;scene.add(grid);
+
+// 每组单独持有材质，点击高亮时不会连带染色其他模型组。
+for(const g of selectable.values())g.traverse(o=>{if(o.isMesh)o.material=Array.isArray(o.material)?o.material.map(m=>m.clone()):o.material.clone()});
+
+// 零件选择说明、列表与模型高亮
+const notes=new Map(defs.map(([id,name,note,color])=>[id,{name,note,color}]));
+const partsEl=document.querySelector('#parts'),nameEl=document.querySelector('#selectedName'),noteEl=document.querySelector('#selectedNote');let selectedId=null;
+for(const [id,name,note,color] of defs){const row=document.createElement('div');row.className='part-row';if(['door','plc','km1','km2','start','stop'].includes(id))row.style.marginLeft='14px';const b=document.createElement('button');b.className='part';b.dataset.id=id;b.innerHTML=`<i class="swatch" style="--c:${color}"></i><span>${name}</span>`;b.addEventListener('click',()=>selectPart(id));const eye=document.createElement('button');eye.className='part-eye';eye.textContent='◉';eye.title='隐藏此部件';eye.setAttribute('aria-label',`隐藏或显示${name}`);eye.addEventListener('click',e=>{e.stopPropagation();const g=selectable.get(id);if(effectiveVisible(g)){g.visible=false;if(selectedId===id)deselect()}else{g.visible=true;let p=g.parent;while(p&&p!==scene){p.visible=true;p=p.parent}}updateEyeButtons()});row.append(b,eye);partsEl.appendChild(row)}
+function resetHighlight(){for(const g of selectable.values())g.traverse(o=>{if(!o.isMesh)return;const mats=Array.isArray(o.material)?o.material:[o.material];for(const m of mats)if(m.userData.originalColor)m.color.copy(m.userData.originalColor)})}
+function selectPart(id){resetHighlight();selectedId=id;const g=selectable.get(id);if(g){let p=g;while(p&&p!==scene){p.visible=true;p=p.parent}if(['plc','km1','km2'].includes(id))setDoor(true);g.traverse(o=>{if(!o.isMesh)return;const mats=Array.isArray(o.material)?o.material:[o.material];for(const m of mats){if(!m.userData.originalColor)m.userData.originalColor=m.color.clone();m.color.copy(m.userData.originalColor).lerp(new THREE.Color('#fff2a6'),.48)}});focusPart(g);updateEyeButtons()}const d=notes.get(id);nameEl.textContent=d.name;noteEl.textContent=d.note;document.querySelectorAll('.part').forEach(b=>b.classList.toggle('active',b.dataset.id===id))}
+function deselect(){resetHighlight();selectedId=null;nameEl.textContent='整体装置';noteEl.textContent='台车位于两条平行导轨之间。两端限位开关用于标示行程端点，控制柜内标出 PLC、KM1 和 KM2。';document.querySelectorAll('.part').forEach(b=>b.classList.remove('active'))}
+
+// 拆分只作静态位移，并以虚线连接部件原装配位置
+const offsets={rails:[0,.58,0],cart:[0,.95,0],wheels:[0,1.05,0],motor:[0,-.82,0],transmission:[0,0,.95],sq2:[0,.95,.35],sq1:[0,.95,.35],cabinet:[0,0,1.2],plc:[0,0,1.2],km1:[0,0,1.2],km2:[0,0,1.2]};
+for(const [id,g] of selectable){initialPositions.set(id,g.position.clone());explodeOffsets.set(id,new THREE.Vector3(...(offsets[id]||[0,0,0])))}
+const guideGroup=new THREE.Group();scene.add(guideGroup);const guideMat=new THREE.LineDashedMaterial({color:0x91a9bb,dashSize:.12,gapSize:.09,transparent:true,opacity:.85});
+function buildGuides(){guideGroup.clear();for(const [id,g] of selectable){const off=explodeOffsets.get(id);if(off.length()<.01)continue;const bounds=new THREE.Box3().setFromObject(g);const from=bounds.getCenter(new THREE.Vector3()),to=from.clone().add(off);const geo=new THREE.BufferGeometry().setFromPoints([from,to]);const l=new THREE.Line(geo,guideMat);l.computeLineDistances();guideGroup.add(l);const dot=new THREE.Mesh(new THREE.SphereGeometry(.06,12,12),new THREE.MeshBasicMaterial({color:0xb8cbd9}));dot.position.copy(from);guideGroup.add(dot)}}buildGuides();guideGroup.visible=false;
+let exploded=false,showGuides=false,labelsVisible=true,doorOpen=false,doorTarget=0,isolationState=null,cameraMove=null;
+const doorPivot=selectable.get('door');
+function setDoor(open){doorOpen=open;doorTarget=open?-Math.PI/2:0;const b=document.querySelector('#doorToggle');b.textContent=open?'关闭控制柜柜门':'打开控制柜柜门';b.classList.toggle('active',open)}
+const travelMin=-5,travelMax=5,limitDwell=.55;let trolleyX=0,travelDirection=1,runState='stopped',dwellRemaining=0,activeLimit=null,travelSpeed=2,statusMessage='停止｜待机';
+const filmDuration=30;let demoMode=false,demoPlaying=false,demoStartTime=0,demoPausedAt=0,moviePlaying=false,movieStartTime=0;
+function setTrolleyPosition(x){trolleyX=THREE.MathUtils.clamp(x,travelMin,travelMax);for(const g of [cart,wheels,motor,transmission])g.position.x=trolleyX}
+function setLimitState(id,on){const led=selectable.get(id)?.userData.led;if(!led)return;led.material.color.setHex(on?0x5ee29a:0x4e5962);led.material.emissive.setHex(on?0x1b8b53:0x111820);led.material.emissiveIntensity=on?1.4:.2}
+function updateRunUI(){const moving=runState==='moving',dwelling=runState==='dwell',led=document.querySelector('#runLed');led.className=`runled${moving?' moving':dwelling?' dwell':''}`;document.querySelector('#runText').textContent=moving?`运行中：前往 ${travelDirection>0?'右端 SQ1':'左端 SQ2'}`:dwelling?`${activeLimit==='sq1'?'SQ1':'SQ2'} 已触发，停留后换向`:statusMessage;document.querySelector('#directionText').textContent=`方向：${travelDirection>0?'向右 →':'向左 ←'}`;document.querySelector('#positionText').textContent=`位置：${trolleyX.toFixed(1)}`;document.querySelector('#cartDot').style.left=`${((trolleyX-travelMin)/(travelMax-travelMin))*100}%`;for(const id of ['plc','km1','km2']){const lamp=selectable.get(id)?.userData.statusLamp;if(!lamp)continue;const on=id==='plc'?runState!=='stopped':moving&&((id==='km1'&&travelDirection>0)||(id==='km2'&&travelDirection<0));lamp.material.color.setHex(on?(id==='km2'?0xffbf58:0x5ee29a):0x4e5962);lamp.material.emissive.setHex(on?(id==='km2'?0x9c5b11:0x1b8b53):0x111820);lamp.material.emissiveIntensity=on?1.4:.2}}
+function startRun(){demoMode=false;demoPlaying=false;if(runState!=='stopped')return;if(exploded)setExploded(false);setDoor(false);if(trolleyX>=travelMax-.02)travelDirection=-1;else if(trolleyX<=travelMin+.02)travelDirection=1;if(activeLimit){setLimitState(activeLimit,false);activeLimit=null}runState='moving';statusMessage='自动往返运行中';updateRunUI()}
+function stopRun(){demoMode=false;demoPlaying=false;if(runState==='stopped')return;runState='stopped';dwellRemaining=0;if(!activeLimit){setLimitState('sq1',false);setLimitState('sq2',false)}statusMessage=`已停止｜当前位置 ${trolleyX.toFixed(1)}`;updateRunUI()}
+function resetRun(){demoMode=false;demoPlaying=false;runState='stopped';dwellRemaining=0;setExploded(false);setDoor(false);setLimitState('sq1',false);setLimitState('sq2',false);activeLimit='sq2';setLimitState('sq2',true);travelDirection=1;setTrolleyPosition(travelMin);statusMessage='已复位到左端原点 SQ2';updateRunUI()}
+function simulateTrolley(dt){if(runState==='dwell'){dwellRemaining-=dt;if(dwellRemaining<=0){if(activeLimit)setLimitState(activeLimit,false);activeLimit=null;runState='moving';statusMessage='限位释放，台车继续反向运行'}updateRunUI();return}if(runState!=='moving')return;const motionDirection=travelDirection,next=trolleyX+motionDirection*travelSpeed*dt;if(motionDirection>0&&next>=travelMax){setTrolleyPosition(travelMax);activeLimit='sq1';setLimitState('sq1',true);travelDirection=-1;runState='dwell';dwellRemaining=limitDwell}else if(motionDirection<0&&next<=travelMin){setTrolleyPosition(travelMin);activeLimit='sq2';setLimitState('sq2',true);travelDirection=1;runState='dwell';dwellRemaining=limitDwell}else setTrolleyPosition(next);for(const rotor of wheelRotors)rotor.rotation.z-=motionDirection*travelSpeed/.3*dt;fanRotor.rotation.z+=motionDirection*travelSpeed/.3*dt;updateRunUI()}
+function pulsePhysicalButton(id){const cap=physicalButtonCaps.get(id);if(!cap)return;const z=cap.position.z;cap.position.z=z-.055;setTimeout(()=>cap.position.z=z,150)}
+function cameraPose(type){if(type==='cabinet')return {target:new THREE.Vector3(3.95,1.15,3.1),offset:new THREE.Vector3(5,4,6)};if(type==='sq1')return {target:new THREE.Vector3(6.25,1.05,1.85),offset:new THREE.Vector3(4,3.4,5.5)};if(type==='sq2')return {target:new THREE.Vector3(-6.25,1.05,1.85),offset:new THREE.Vector3(-4,3.4,5.5)};return {target:new THREE.Vector3(0,.75,1),offset:new THREE.Vector3(12,10,14)}}
+const cameraShots=[{t:0,type:'wide'},{t:2.7,type:'wide'},{t:3.4,type:'cabinet'},{t:4.2,type:'wide'},{t:6.7,type:'wide'},{t:7.15,type:'sq1'},{t:8.05,type:'sq1'},{t:8.75,type:'wide'},{t:16.6,type:'wide'},{t:17.1,type:'sq2'},{t:17.9,type:'sq2'},{t:18.6,type:'wide'},{t:21.8,type:'wide'},{t:22.4,type:'cabinet'},{t:23.3,type:'cabinet'},{t:24.1,type:'wide'},{t:30,type:'wide'}];
+function applyFilmCamera(t){let i=0;while(i<cameraShots.length-2&&t>cameraShots[i+1].t)i++;const a=cameraShots[i],b=cameraShots[i+1],p=THREE.MathUtils.clamp((t-a.t)/(b.t-a.t),0,1),e=p*p*(3-2*p),pa=cameraPose(a.type),pb=cameraPose(b.type),ta=pa.target,tb=pb.target,oa=pa.offset,ob=pb.offset;const target=ta.clone().lerp(tb,e),offset=oa.clone().lerp(ob,e);camera.position.copy(target).add(offset);camera.up.set(0,1,0);camera.lookAt(target);controls.target.copy(target)}
+function applyFilmTime(seconds){const t=THREE.MathUtils.clamp(seconds,0,filmDuration);let x,dir=1,state='stopped',limit=null,message='动画待机';if(t<3){x=travelMin;limit='sq2';message='原点待机'}else if(t<7){x=travelMin+(travelMax-travelMin)*(t-3)/4;dir=1;state='moving';message='KM1 吸合，台车向右运行'}else if(t<7.55){x=travelMax;dir=-1;state='dwell';limit='sq1';message='SQ1 到位，暂停换向'}else if(t<10){x=travelMax-2.5*(t-7.55)/2.45;dir=-1;state='moving';message='KM2 吸合，台车向左返回'}else if(t<17){x=2.5-7.5*(t-10)/7;dir=-1;state='moving';message='KM2 吸合，台车向左返回'}else if(t<17.55){x=travelMin;dir=1;state='dwell';limit='sq2';message='SQ2 到位，暂停换向'}else if(t<22.5){x=travelMin+6.5*(t-17.55)/4.95;dir=1;state='moving';message='KM1 吸合，台车再次向右运行'}else{x=1.5;dir=1;state='stopped';message='停止按钮动作，台车立即停车'}
+  trolleyX=x;travelDirection=dir;runState=state;activeLimit=limit;setTrolleyPosition(x);const doorProgress=THREE.MathUtils.clamp((t-3.05)/.55,0,1),doorEase=doorProgress*doorProgress*(3-2*doorProgress);doorTarget=-Math.PI/2*doorEase;doorOpen=doorEase>.5;doorPivot.rotation.y=doorTarget;document.querySelector('#doorToggle').textContent=doorOpen?'关闭控制柜柜门':'打开控制柜柜门';document.querySelector('#doorToggle').classList.toggle('active',doorOpen);setLimitState('sq1',limit==='sq1');setLimitState('sq2',limit==='sq2');statusMessage=message;
+  const wheelAngle=-(x-travelMin)/.3;for(const rotor of wheelRotors)rotor.rotation.z=wheelAngle;fanRotor.rotation.z=-wheelAngle;
+  const startCap=physicalButtonCaps.get('start'),stopCap=physicalButtonCaps.get('stop');if(startCap)startCap.position.z=.31-(t>=3&&t<3.24?.055:0);if(stopCap)stopCap.position.z=.31-(t>=22.5&&t<22.8?.055:0);
+  applyFilmCamera(t);updateRunUI();const progress=document.querySelector('#demoProgress');if(progress)progress.style.width=`${(t/filmDuration)*100}%`;const title=document.querySelector('#filmTitle');if(title)title.style.opacity=t<2.6?String(Math.min(1,t/.35,(2.6-t)/.4)):0;
+}
+function playTeachingAnimation(restart=false){demoMode=true;if(exploded)setExploded(false);if(isolationState){for(const [id,visible] of isolationState)selectable.get(id).visible=visible;isolationState=null;document.querySelector('#isolate').textContent='单独查看所选';document.querySelector('#isolate').classList.remove('active')}for(const g of selectable.values())g.visible=true;updateEyeButtons();if(restart||demoPausedAt>=filmDuration)demoPausedAt=0;demoStartTime=performance.now()-demoPausedAt*1000;demoPlaying=true;document.querySelector('#demoPlay').textContent='继续播放';}
+function pauseTeachingAnimation(){if(!demoMode||!demoPlaying)return;demoPausedAt=Math.min((performance.now()-demoStartTime)/1000,filmDuration);demoPlaying=false;applyFilmTime(demoPausedAt);}
+function startMovie(){movieStartTime=performance.now();moviePlaying=true;applyFilmTime(0)}
+window.renderAnimationFrame=(t)=>{applyFilmTime(t);renderer.render(scene,camera)};
+window.startMovie=startMovie;
+function setExploded(value){if(value&&runState!=='stopped'){stopRun();statusMessage='已停止运行，可进行零部件拆分';updateRunUI()}exploded=value;for(const [id,g] of selectable){g.position.copy(initialPositions.get(id));if(value)g.position.add(explodeOffsets.get(id))}setTrolleyPosition(trolleyX);guideGroup.visible=value&&showGuides;document.querySelector('#assembled').classList.toggle('active',!value);document.querySelector('#exploded').classList.toggle('active',value);document.querySelector('#guidesToggle').textContent=showGuides?'隐藏装配引导线':'显示装配引导线'}
+function moveCameraTo(position,target,up=new THREE.Vector3(0,1,0)){cameraMove={fromPosition:camera.position.clone(),toPosition:position.clone(),fromTarget:controls.target.clone(),toTarget:target.clone(),fromUp:camera.up.clone(),toUp:up.clone(),elapsed:0,duration:.65}}
+function focusPart(g){const bounds=new THREE.Box3().setFromObject(g);if(bounds.isEmpty())return;const center=bounds.getCenter(new THREE.Vector3()),sphere=bounds.getBoundingSphere(new THREE.Sphere());const direction=camera.position.clone().sub(controls.target).normalize();const distance=Math.max(5,Math.min(19,sphere.radius/Math.tan(THREE.MathUtils.degToRad(camera.fov/2))*1.45));moveCameraTo(center.clone().add(direction.multiplyScalar(distance)),center,camera.up.clone())}
+function setExplodedButton(value){setExploded(value)}
+document.querySelector('#assembled').addEventListener('click',()=>setExplodedButton(false));document.querySelector('#exploded').addEventListener('click',()=>setExplodedButton(true));
+document.querySelector('#resetView').addEventListener('click',()=>moveCameraTo(homePosition,homeTarget,new THREE.Vector3(0,1,0)));
+document.querySelector('#isoView').addEventListener('click',()=>moveCameraTo(new THREE.Vector3(18,15,21),homeTarget,new THREE.Vector3(0,1,0)));
+document.querySelector('#frontView').addEventListener('click',()=>moveCameraTo(new THREE.Vector3(0,6,26),new THREE.Vector3(0,.8,1),new THREE.Vector3(0,1,0)));
+document.querySelector('#topView').addEventListener('click',()=>moveCameraTo(new THREE.Vector3(0,27,1),new THREE.Vector3(0,.75,1),new THREE.Vector3(0,0,-1)));
+document.querySelector('#doorToggle').addEventListener('click',()=>setDoor(!doorOpen));
+document.querySelector('#startRun').addEventListener('click',()=>{pulsePhysicalButton('start');startRun()});document.querySelector('#stopRun').addEventListener('click',()=>{pulsePhysicalButton('stop');stopRun()});document.querySelector('#resetRun').addEventListener('click',resetRun);
+document.querySelector('#speedRange').addEventListener('input',e=>{travelSpeed=Number(e.currentTarget.value);document.querySelector('#speedValue').textContent=travelSpeed.toFixed(1)});
+document.querySelector('#demoPlay').addEventListener('click',()=>playTeachingAnimation(false));document.querySelector('#demoPause').addEventListener('click',pauseTeachingAnimation);document.querySelector('#demoReplay').addEventListener('click',()=>playTeachingAnimation(true));
+updateRunUI();
+document.querySelector('#labelsToggle').addEventListener('click',e=>{labelsVisible=!labelsVisible;labelObjects.forEach(o=>o.visible=labelsVisible);direction.visible=labelsVisible;e.currentTarget.textContent=labelsVisible?'隐藏部件标注':'显示部件标注';e.currentTarget.classList.toggle('active',labelsVisible)});
+document.querySelector('#guidesToggle').addEventListener('click',e=>{showGuides=!showGuides;guideGroup.visible=exploded&&showGuides;e.currentTarget.textContent=showGuides?'隐藏装配引导线':'显示装配引导线';e.currentTarget.classList.toggle('active',showGuides)});
+function effectiveVisible(g){while(g&&g!==scene){if(!g.visible)return false;g=g.parent}return true}
+function updateEyeButtons(){document.querySelectorAll('.part-eye').forEach(b=>{const id=b.previousElementSibling.dataset.id,visible=effectiveVisible(selectable.get(id));b.classList.toggle('off',!visible);b.title=visible?'隐藏此部件':'显示此部件'})}
+document.querySelector('#showAll').addEventListener('click',()=>{if(isolationState){for(const [id,visible] of isolationState)selectable.get(id).visible=visible;isolationState=null;document.querySelector('#isolate').textContent='单独查看所选';document.querySelector('#isolate').classList.remove('active')}for(const g of selectable.values())g.visible=true;updateEyeButtons()});
+document.querySelector('#isolate').addEventListener('click',e=>{if(isolationState){for(const [id,visible] of isolationState)selectable.get(id).visible=visible;isolationState=null;e.currentTarget.textContent='单独查看所选';e.currentTarget.classList.remove('active');updateEyeButtons();return}if(!selectedId){selectPart('cart')}isolationState=new Map([...selectable].map(([id,g])=>[id,g.visible]));for(const g of selectable.values())g.visible=false;let g=selectable.get(selectedId);while(g&&g!==scene){g.visible=true;g=g.parent}e.currentTarget.textContent='退出单独查看';e.currentTarget.classList.add('active');updateEyeButtons()});
+
+const raycaster=new THREE.Raycaster(),pointer=new THREE.Vector2();let pointerDown=null;canvas.addEventListener('contextmenu',e=>e.preventDefault());canvas.addEventListener('pointerdown',e=>{pointerDown={x:e.clientX,y:e.clientY}});canvas.addEventListener('pointerup',e=>{if(!pointerDown||Math.hypot(e.clientX-pointerDown.x,e.clientY-pointerDown.y)>5){pointerDown=null;return}pointerDown=null;const r=canvas.getBoundingClientRect();pointer.set(((e.clientX-r.left)/r.width)*2-1,-((e.clientY-r.top)/r.height)*2+1);raycaster.setFromCamera(pointer,camera);const hits=raycaster.intersectObjects([...selectable.values()],true);if(!hits.length)return;let o=hits[0].object;while(o&& !selectable.has(o.name))o=o.parent;if(o){selectPart(o.name);if(o.name==='start'){pulsePhysicalButton('start');startRun()}if(o.name==='stop'){pulsePhysicalButton('stop');stopRun()}}});
+function resize(){const w=stage.clientWidth,h=stage.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()}new ResizeObserver(resize).observe(stage);resize();
+const clock=new THREE.Clock();
+function animate(){requestAnimationFrame(animate);const dt=Math.min(clock.getDelta(),.05);if(cinematicMode){if(moviePlaying){const t=(performance.now()-movieStartTime)/1000;applyFilmTime(t);if(t>=filmDuration){moviePlaying=false;applyFilmTime(filmDuration)}}renderer.render(scene,camera);return}if(demoMode){if(demoPlaying){demoPausedAt=(performance.now()-demoStartTime)/1000;if(demoPausedAt>=filmDuration){demoPausedAt=filmDuration;demoPlaying=false;document.querySelector('#demoPlay').textContent='重播教学动画'}}applyFilmTime(demoPausedAt)}else{if(cameraMove){cameraMove.elapsed+=dt;const t=Math.min(cameraMove.elapsed/cameraMove.duration,1),ease=t*t*(3-2*t);camera.position.lerpVectors(cameraMove.fromPosition,cameraMove.toPosition,ease);controls.target.lerpVectors(cameraMove.fromTarget,cameraMove.toTarget,ease);camera.up.lerpVectors(cameraMove.fromUp,cameraMove.toUp,ease);if(t>=1)cameraMove=null}if(doorPivot){doorPivot.rotation.y+=(doorTarget-doorPivot.rotation.y)*(1-Math.exp(-dt*9));if(Math.abs(doorTarget-doorPivot.rotation.y)<.001)doorPivot.rotation.y=doorTarget}simulateTrolley(dt);controls.update()}renderer.render(scene,camera)}
+if(autoFilm)startMovie();animate();
+</script>
+</body>
+</html>

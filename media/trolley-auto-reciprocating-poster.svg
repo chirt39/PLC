@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+  <rect width="1920" height="1080" fill="#f8f9f4"/>
+  <g font-family="Noto Sans SC, Microsoft YaHei, sans-serif">
+    <text x="96" y="78" font-size="28" fill="#657b80">PLC 应用技术 · 微动画 17 · 36 秒</text>
+    <text x="96" y="185" font-size="66" font-weight="700" fill="#183c45">案例策划：台车自动往返控制</text>
+    <text x="96" y="250" font-size="32" fill="#657b80">看懂两端限位换向、正反转互锁与停止逻辑</text>
+    <rect x="96" y="310" width="1728" height="515" rx="28" fill="#fff" stroke="#dfe7e2" stroke-width="4"/>
+    <text x="160" y="380" font-size="33" font-weight="600" fill="#183c45">台车行程与限位开关</text>
+    <text x="1755" y="380" text-anchor="end" font-size="27" fill="#657b80">启动 → 正转 → 前限位换向 → 反转 → 原点换向</text>
+    <rect x="220" y="657" width="1480" height="44" rx="8" fill="#dfe5e0" stroke="#bdc9c1" stroke-width="3"/>
+    <path d="M270 625H1648M270 660H1648" stroke="#697c76" stroke-width="12" stroke-linecap="round"/>
+    <path d="M300 615V680M400 615V680M500 615V680M600 615V680M700 615V680M800 615V680M900 615V680M1000 615V680M1100 615V680M1200 615V680M1300 615V680M1400 615V680M1500 615V680M1600 615V680" stroke="#9eaaa3" stroke-width="9"/>
+    <path d="M280 480V610M1640 480V610" stroke="#82938b" stroke-width="10"/>
+    <rect x="255" y="520" width="50" height="74" rx="10" fill="#fae8d8" stroke="#dc6430" stroke-width="5"/>
+    <rect x="1615" y="520" width="50" height="74" rx="10" fill="#fae8d8" stroke="#dc6430" stroke-width="5"/>
+    <path d="M280 520L316 488M1640 520L1604 488" stroke="#dc6430" stroke-width="8" stroke-linecap="round"/>
+    <text x="280" y="455" text-anchor="middle" font-size="27" fill="#dc6430">SQ2 原点限位</text>
+    <text x="1640" y="455" text-anchor="middle" font-size="27" fill="#dc6430">SQ1 前限位</text>
+    <path d="M500 455H900" stroke="#008579" stroke-width="9" stroke-linecap="round"/>
+    <path d="M870 435L900 455L870 475" fill="none" stroke="#008579" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="700" y="425" text-anchor="middle" font-size="28" fill="#008579">KM1 正转 →</text>
+    <path d="M1420 510H1020" stroke="#527da0" stroke-width="9" stroke-linecap="round"/>
+    <path d="M1050 490L1020 510L1050 530" fill="none" stroke="#527da0" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="1220" y="480" text-anchor="middle" font-size="28" fill="#527da0">← KM2 反转</text>
+    <rect x="855" y="535" width="260" height="102" rx="18" fill="#dcece4" stroke="#80968d" stroke-width="5"/>
+    <rect x="913" y="485" width="144" height="52" rx="10" fill="#cfd8d3" stroke="#80968d" stroke-width="4"/>
+    <rect x="932" y="435" width="106" height="52" rx="10" fill="#d89052" stroke="#a66c3d" stroke-width="4"/>
+    <circle cx="907" cy="645" r="28" fill="#39484a" stroke="#17282a" stroke-width="4"/><circle cx="1063" cy="645" r="28" fill="#39484a" stroke="#17282a" stroke-width="4"/>
+    <text x="985" y="598" text-anchor="middle" font-size="27" font-weight="600" fill="#183c45">台车</text>
+    <rect x="96" y="880" width="1728" height="112" rx="20" fill="#183c45"/>
+    <text x="960" y="950" text-anchor="middle" font-size="37" fill="#fff">两端限位发出换向信号　·　KM1 与 KM2 互锁　·　第二次回到原点后停止</text>
+  </g>
+</svg>

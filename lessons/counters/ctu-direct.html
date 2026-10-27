@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="标准CTU计数动画：输入直接接到CU，CTU内部按上升沿加1，不需要额外脉冲。">
+  <title>PLC上升沿检测CTU直接计数 · 微动画</title>
+  <link rel="stylesheet" href="../../assets/fonts.css">
+  <link rel="stylesheet" href="../../assets/style.css">
+</head>
+<body data-counter-lesson="ctu">
+  <main class="lesson-shell">
+    <nav class="lesson-nav" aria-label="课程导航">
+      <a class="back" href="../../index.html"><span aria-hidden="true">←</span> 全部微动画</a>
+      <span class="meta">PLC 应用技术 / 微动画 15</span>
+    </nav>
+    <header class="lesson-intro">
+      <h1>PLC上升沿检测CTU直接计数</h1>
+      <p>把按钮输入直接接到 CTU.CU；观察按下的上升沿计数、松开的下降沿不计数。</p>
+    </header>
+    <section class="viewer" aria-label="CTU 直接计数教学动画播放器">
+      <div id="stage" role="img" aria-label="15秒CTU直接计数动画，展示输入上升沿和下降沿以及累计值"></div>
+      <div class="playback">
+        <button id="toggle" type="button" aria-label="暂停动画">暂停</button>
+        <button id="restart" type="button">重播</button>
+        <div class="track" aria-hidden="true"><div id="progress"></div></div>
+        <span id="timer">00 / 15 s</span>
+        <span class="muted" id="play-status">无声 · 自动演示</span>
+        <button id="fullscreen" type="button">全屏</button>
+      </div>
+    </section>
+    <p class="mobile-note">横屏观看，输入波形和计数变化更清晰。</p>
+    <section class="learning-summary">
+      <div>
+        <h2>记住这一点</h2>
+        <p class="takeaway">标准 CTU 的 CU 已按上升沿计数。</p>
+        <p>把 I0.0 直接连接到 CTU.CU。输入 0→1 时当前值 CV 加 1；输入保持为 1 时不重复计数；输入 1→0 时不计数，但为下一次上升沿重新做好准备。</p>
+      </div>
+      <div class="reflection">
+        <h2>想一想</h2>
+        <p>按钮按下、松开各一次，为什么 CTU 只增加一次？</p>
+      </div>
+    </section>
+    <section class="teaching-note">
+      <p><strong>动画说明</strong> 本例采用具有 CU 上升沿语义的标准 CTU。计数只需输入接入 CU，不需要单独串入 R_TRIG；不同 PLC 厂商或特殊计数块请以对应手册为准。</p>
+    </section>
+    <footer class="lesson-foot">
+      <span>15 秒 · 上升沿计数，下降沿复位检测条件</span>
+      <a href="./rtrig-counter.html">下一条：R_TRIG 脉冲触发计数 →</a>
+    </footer>
+  </main>
+  <script defer src="../../assets/counter-lessons.js"></script>
+</body>
+</html>

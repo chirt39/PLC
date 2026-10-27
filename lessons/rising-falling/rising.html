@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="PLC上升沿检测微动画：观察输入从0变为1时，R_TRIG输出一个扫描周期的脉冲。">
+  <title>PLC上升沿检测 · 15秒微动画</title>
+  <link rel="stylesheet" href="../../assets/fonts.css">
+  <link rel="stylesheet" href="../../assets/style.css">
+</head>
+<body data-edge-lesson="rising">
+  <main class="lesson-shell">
+    <nav class="lesson-nav" aria-label="课程导航">
+      <a class="back" href="../../index.html"><span aria-hidden="true">←</span> 全部微动画</a>
+      <span class="meta">PLC 应用技术 / 微动画 07</span>
+    </nav>
+    <header class="lesson-intro">
+      <h1>按下按钮时，PLC何时触发上升沿？</h1>
+      <p>观察输入从 0 变为 1 时，上升沿输出如何产生一个扫描周期的脉冲。</p>
+    </header>
+    <section class="viewer" aria-label="PLC上升沿检测动画播放器">
+      <div id="stage" role="img" aria-label="15秒PLC上升沿检测教学动画"></div>
+      <div class="playback">
+        <button id="toggle" type="button" aria-label="暂停动画">暂停</button>
+        <button id="restart" type="button">重播</button>
+        <div class="track" aria-hidden="true"><div id="progress"></div></div>
+        <span id="timer">00 / 15 s</span>
+        <span class="muted" id="play-status">无声 · 自动演示</span>
+        <button id="fullscreen" type="button">全屏</button>
+      </div>
+    </section>
+    <p class="mobile-note">横屏观看，波形与文字更清晰。</p>
+    <section class="learning-summary">
+      <div>
+        <h2>记住这一点</h2>
+        <p class="takeaway">上升沿只对应输入由 0 变为 1 的瞬间。</p>
+        <p>R_TRIG 将本次输入状态与上一扫描周期的状态比较。输入由 0 变为 1 时，Q 输出 1 一个扫描周期，计数值加 1；输入保持为 1 时，Q 回到 0，计数值保持不变。</p>
+      </div>
+      <div class="reflection">
+        <h2>想一想</h2>
+        <p>按钮保持按下时，上升沿输出会一直为 1 吗？</p>
+      </div>
+    </section>
+    <section class="teaching-note">
+      <p><strong>动画说明</strong> 本动画按周期采样展示上升沿脉冲，每个按钮状态变化均被采样；不演示漏检情况。不同 PLC 平台的边沿指令名称可能不同。</p>
+    </section>
+    <footer class="lesson-foot">
+      <span>教学慢放示意 · 15 秒 · 中文字幕</span>
+      <a href="./falling.html">下一条：下降沿检测 →</a>
+    </footer>
+  </main>
+  <script defer src="../../assets/edge-lessons.js"></script>
+</body>
+</html>

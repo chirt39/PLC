@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="点动与长动控制教学微动画：前10秒演示点动，后20秒分步解释长动自锁。">
+  <title>点动与长动控制 · 30秒微动画</title>
+  <link rel="stylesheet" href="../../assets/fonts.css">
+  <link rel="stylesheet" href="../../assets/style.css">
+</head>
+<body data-control-lesson="jog">
+  <main class="lesson-shell">
+    <nav class="lesson-nav" aria-label="课程导航">
+      <a class="back" href="../../index.html"><span aria-hidden="true">←</span> 全部微动画</a>
+      <span class="meta">PLC 应用技术 / 微动画 13</span>
+    </nav>
+    <header class="lesson-intro">
+      <h1>点动与长动控制</h1>
+      <p>前10秒观察点动“松手即停”，后20秒分步看懂长动如何自锁保持。</p>
+    </header>
+    <section class="viewer" aria-label="点动与长动控制动画播放器">
+      <div id="stage" role="img" aria-label="30秒点动与长动控制教学动画"></div>
+      <div class="playback">
+        <button id="toggle" type="button" aria-label="暂停动画">暂停</button>
+        <button id="restart" type="button">重播</button>
+        <div class="track" aria-hidden="true"><div id="progress"></div></div>
+        <span id="timer">00 / 30 s</span>
+        <span class="muted" id="play-status">无声 · 自动演示</span>
+        <button id="fullscreen" type="button">全屏</button>
+      </div>
+    </section>
+    <p class="mobile-note">横屏观看，按钮和控制回路更清晰。</p>
+    <section class="learning-summary">
+      <div>
+        <h2>记住这一点</h2>
+        <p class="takeaway">点动靠持续按压；长动靠自锁保持。</p>
+        <p>KM 线圈和 KM 辅助触点是同一个接触器里的不同部件：线圈是电磁铁，得电后带动衔铁吸合，辅助常开触点随之闭合；线圈失电后衔铁复位，辅助触点断开。长动时，启动触点先让线圈得电，辅助触点闭合后与启动触点并联，松开启动按钮后仍能给线圈供电。按下停止按钮会切断串联回路，线圈失电，辅助触点复位，电动机停止。</p>
+      </div>
+      <div class="reflection">
+        <h2>想一想</h2>
+        <p>为什么点动要一直按住，而长动只需点按启动按钮？</p>
+      </div>
+    </section>
+    <section class="teaching-note">
+      <p><strong>动画说明</strong> 动画分为前后两段连续播放，比较点动回路与长动自锁回路的基本逻辑；不展开主电路、过载保护和 PLC 输入输出接线。</p>
+    </section>
+    <footer class="lesson-foot">
+      <a href="./contacts.html">← 上一条：常开/常闭触点与线圈逻辑</a>
+      <span>前10秒：点动 · 后20秒：长动自锁 · 总时长30秒</span>
+    </footer>
+  </main>
+  <script defer src="../../assets/control-lessons.js"></script>
+</body>
+</html>

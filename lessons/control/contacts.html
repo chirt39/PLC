@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="用28秒教学动画逐步理解常开、常闭 PLC 判断指令与输出线圈逻辑。">
+  <title>常开/常闭触点与线圈逻辑 · 28秒微动画</title>
+  <link rel="stylesheet" href="../../assets/fonts.css">
+  <link rel="stylesheet" href="../../assets/style.css">
+</head>
+<body data-control-lesson="contacts">
+  <main class="lesson-shell">
+    <nav class="lesson-nav" aria-label="课程导航">
+      <a class="back" href="../../index.html"><span aria-hidden="true">←</span> 全部微动画</a>
+      <span class="meta">PLC 应用技术 / 微动画 12</span>
+    </nav>
+    <header class="lesson-intro">
+      <h1>常开/常闭触点与线圈逻辑</h1>
+      <p>先看按钮松开和按下时输入如何变化，再慢慢对照两条判断支路和输出线圈。</p>
+    </header>
+    <section class="viewer" aria-label="常开常闭触点与线圈逻辑动画播放器">
+      <div id="stage" role="img" aria-label="28秒常开常闭触点与线圈逻辑教学动画"></div>
+      <div class="playback">
+        <button id="toggle" type="button" aria-label="暂停动画">暂停</button>
+        <button id="restart" type="button">重播</button>
+        <div class="track" aria-hidden="true"><div id="progress"></div></div>
+        <span id="timer">00 / 28 s</span>
+        <span class="muted" id="play-status">无声 · 自动演示</span>
+        <button id="fullscreen" type="button">全屏</button>
+      </div>
+    </section>
+    <p class="mobile-note">横屏观看，梯形图与文字更清晰。</p>
+    <section class="learning-summary">
+      <div>
+        <h2>记住这一点</h2>
+        <p class="takeaway">常开判断：输入为 1 时接通；常闭判断：输入为 0 时接通。</p>
+        <p>输入信号为 0 时，常开支路断开、常闭支路接通；输入信号为 1 时，状态相反。所在支路接通，输出线圈得电；支路断开，线圈失电。</p>
+      </div>
+      <div class="reflection">
+        <h2>想一想</h2>
+        <p>按钮按下，输入从没有信号变为有信号时，两条支路和各自的线圈会怎样变化？</p>
+      </div>
+    </section>
+    <section class="teaching-note">
+      <p><strong>动画说明</strong> 图中的常开、常闭表示 PLC 程序里的判断规则，不表示按钮内部的金属触点结构。每种状态会停留数秒，方便对照输入、支路和线圈。</p>
+    </section>
+    <footer class="lesson-foot">
+      <a href="./jog.html">下一条：点动与长动控制 →</a>
+      <span>教学慢放示意 · 28 秒 · 中文字幕</span>
+    </footer>
+  </main>
+  <script defer src="../../assets/control-lessons.js"></script>
+</body>
+</html>

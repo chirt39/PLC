@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="PLC上升沿与下降沿检测组合微动画：先演示按下时的0到1，再演示松开时的1到0。">
+  <title>PLC上升沿与下降沿检测 · 30秒微动画</title>
+  <link rel="stylesheet" href="../../assets/fonts.css">
+  <link rel="stylesheet" href="../../assets/style.css">
+</head>
+<body data-edge-lesson="combined">
+  <main class="lesson-shell">
+    <nav class="lesson-nav" aria-label="课程导航">
+      <a class="back" href="../../index.html"><span aria-hidden="true">←</span> 全部微动画</a>
+      <span class="meta">PLC 应用技术 / 微动画 09</span>
+    </nav>
+    <header class="lesson-intro">
+      <h1>PLC上升沿与下降沿检测</h1>
+      <p>前半段演示按下按钮时的 0 → 1；后半段演示松开按钮时的 1 → 0。</p>
+    </header>
+    <section class="viewer" aria-label="PLC上升沿与下降沿组合动画播放器">
+      <div id="stage" role="img" aria-label="30秒PLC上升沿与下降沿教学动画，前15秒上升沿，后15秒下降沿"></div>
+      <div class="playback">
+        <button id="toggle" type="button" aria-label="暂停动画">暂停</button>
+        <button id="restart" type="button">重播</button>
+        <div class="track" aria-hidden="true"><div id="progress"></div></div>
+        <span id="timer">00 / 30 s</span>
+        <span class="muted" id="play-status">无声 · 自动演示</span>
+        <button id="fullscreen" type="button">全屏</button>
+      </div>
+    </section>
+    <p class="mobile-note">横屏观看，波形与文字更清晰。</p>
+    <section class="learning-summary">
+      <div>
+        <h2>记住这一点</h2>
+        <p class="takeaway">按下触发上升沿，松开触发下降沿。</p>
+        <p>输入由 0 变为 1 时，上升沿计数加 1；输入由 1 变为 0 时，下降沿计数加 1。每段都保留边沿输出波形，计数显示本段累计次数。</p>
+      </div>
+      <div class="reflection">
+        <h2>想一想</h2>
+        <p>按钮按下一次再松开，会分别触发几次上升沿和下降沿？</p>
+      </div>
+    </section>
+    <section class="teaching-note">
+      <p><strong>动画说明</strong> 合并版共 30 秒：前 15 秒演示上升沿，后 15 秒演示下降沿。切换到第二段时，该段计数从 0 开始；每个边沿都被采样，不演示漏检情况。</p>
+    </section>
+    <footer class="lesson-foot">
+      <a href="./rising.html">单独看上升沿</a>
+      <a href="./falling.html">单独看下降沿</a>
+    </footer>
+  </main>
+  <script defer src="../../assets/edge-lessons.js"></script>
+</body>
+</html>

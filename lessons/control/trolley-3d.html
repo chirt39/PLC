@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="台车自动往返控制三维教学内容：观看三维动画，并通过交互模型查看部件和往返控制结构。">
+  <title>台车自动往返控制：3D动画与模型 · PLC 微动画</title>
+  <link rel="stylesheet" href="../../assets/fonts.css">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <style>
+    .media-box{overflow:hidden;border:1px solid #dce4dd;border-radius:14px;background:#101823}
+    .media-box video{display:block;width:100%;max-height:76vh;background:#101823}
+    .section-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin:34px 0 14px}
+    .section-heading h2{font-size:18px;margin:0 0 6px;font-weight:600}
+    .section-heading p{font-size:13px;color:var(--muted);line-height:1.7;margin:0}
+    .model-frame{display:block;width:100%;height:min(78vh,820px);min-height:620px;border:1px solid #dce4dd;border-radius:14px;background:#101823}
+    .model-links{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px}
+    .model-links .download{font-size:12px;padding:10px 14px}
+    @media(max-width:620px){.section-heading{display:block;margin:26px 8px 12px}.model-frame{height:680px;min-height:680px;border-radius:9px}.media-box{border-radius:9px}}
+  </style>
+</head>
+<body>
+  <main class="lesson-shell">
+    <nav class="lesson-nav" aria-label="课程导航">
+      <a class="back" href="../../index.html"><span aria-hidden="true">←</span> 全部微动画</a>
+      <span class="meta">PLC 应用技术 / 三维案例 19</span>
+    </nav>
+    <header class="lesson-intro">
+      <h1>台车自动往返控制：3D动画与模型</h1>
+      <p>先观看自动往返三维动画，再操作模型查看台车、限位开关、导轨和控制柜。</p>
+    </header>
+
+    <section aria-label="台车自动往返三维动画">
+      <div class="media-box">
+        <video controls playsinline preload="metadata" poster="../../media/trolley-3d-poster.png">
+          <source src="../../media/trolley-3d-animation.mp4" type="video/mp4">
+          当前浏览器无法播放此视频，请使用现代浏览器打开本页面。
+        </video>
+      </div>
+      <p class="mobile-note">视频支持播放、暂停、拖动进度和全屏观看。</p>
+    </section>
+
+    <section class="learning-summary">
+      <div>
+        <h2>观察重点</h2>
+        <p class="takeaway">台车到达一端限位后换向，往返过程中正转与反转输出不能同时接通。</p>
+        <p>动画依次展示原点待机、启动向右、前限位换向向左、回到原点再次向右，以及按下停止后两方向输出断开的过程。</p>
+      </div>
+      <div class="reflection">
+        <h2>模型操作</h2>
+        <p>可旋转、缩放和平移模型，切换整体装配与零部件拆分，并点选部件阅读说明。</p>
+      </div>
+    </section>
+
+    <section aria-label="台车自动往返交互式三维模型">
+      <div class="section-heading">
+        <div><h2>交互式三维结构模型</h2><p>可查看装配结构，也可启动模型内的自动往返演示。</p></div>
+      </div>
+      <iframe class="model-frame" src="./trolley-3d-model.html" title="台车自动往返控制交互式三维模型" allow="fullscreen" loading="lazy"></iframe>
+      <div class="model-links">
+        <a class="download" href="./trolley-3d-model.html" target="_blank" rel="noopener">在新页面单独打开模型 ↗</a>
+        <a class="download" href="./trolley.html">查看原有二维教学动画 ↗</a>
+      </div>
+    </section>
+
+    <section class="teaching-note">
+      <p><strong>使用提示</strong> MP4 动画文件随网站一并提供。交互模型通过 Three.js 在线模块渲染，首次打开模型需要网络连接；如果模型区域未显示，请点击“在新页面单独打开模型”并确认网络可访问 jsDelivr。</p>
+    </section>
+    <footer class="lesson-foot">
+      <a href="../../index.html">← 返回动画目录</a>
+      <span>三维动画 · 可交互模型 · 原二维动画保留</span>
+    </footer>
+  </main>
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="R_TRIG与CTU脉冲计数动画：R_TRIG检测输入上升沿，Q输出一个扫描周期脉冲，再触发CTU计数。">
+  <title>PLC上升沿检测R_TRIG计数 · 微动画</title>
+  <link rel="stylesheet" href="../../assets/fonts.css">
+  <link rel="stylesheet" href="../../assets/style.css">
+</head>
+<body data-counter-lesson="rtrig">
+  <main class="lesson-shell">
+    <nav class="lesson-nav" aria-label="课程导航">
+      <a class="back" href="../../index.html"><span aria-hidden="true">←</span> 全部微动画</a>
+      <span class="meta">PLC 应用技术 / 微动画 16</span>
+    </nav>
+    <header class="lesson-intro">
+      <h1>PLC上升沿检测R_TRIG计数</h1>
+      <p>观察信号路径：I0.0 → R_TRIG.CLK → R_TRIG.Q → CTU.CU。</p>
+    </header>
+    <section class="viewer" aria-label="R_TRIG脉冲触发计数教学动画播放器">
+      <div id="stage" role="img" aria-label="15秒R_TRIG脉冲触发计数动画，展示输入上升沿与下降沿、脉冲输出和计数值"></div>
+      <div class="playback">
+        <button id="toggle" type="button" aria-label="暂停动画">暂停</button>
+        <button id="restart" type="button">重播</button>
+        <div class="track" aria-hidden="true"><div id="progress"></div></div>
+        <span id="timer">00 / 15 s</span>
+        <span class="muted" id="play-status">无声 · 自动演示</span>
+        <button id="fullscreen" type="button">全屏</button>
+      </div>
+    </section>
+    <p class="mobile-note">横屏观看，三条波形和功能块关系更清晰。</p>
+    <section class="learning-summary">
+      <div>
+        <h2>记住这一点</h2>
+        <p class="takeaway">R_TRIG 检测边沿，CTU 累计次数。</p>
+        <p>输入 0→1 时，R_TRIG.Q 输出一个扫描周期的脉冲；该脉冲接入 CTU.CU，计数增加。输入 1→0 是下降沿，R_TRIG 不输出脉冲，计数不变。</p>
+      </div>
+      <div class="reflection">
+        <h2>想一想</h2>
+        <p>松开按钮时出现下降沿，R_TRIG.Q 会不会再输出脉冲？</p>
+      </div>
+    </section>
+    <section class="teaching-note">
+      <p><strong>动画说明</strong> R_TRIG 本身只检测上升沿并输出脉冲，不负责累计。此动画用 R_TRIG.Q 驱动 CTU 展示显式信号路径；若只做简单计数，标准 CTU 通常可以直接接收输入，无需额外 R_TRIG。脉冲画面作可视化放大，实际持续一个扫描周期。</p>
+    </section>
+    <footer class="lesson-foot">
+      <a href="./ctu-direct.html">← 上一条：CTU 直接计数</a>
+      <span>15 秒 · 上升沿输出脉冲，下降沿不触发</span>
+    </footer>
+  </main>
+  <script defer src="../../assets/counter-lessons.js"></script>
+</body>
+</html>

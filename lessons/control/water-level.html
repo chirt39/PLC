@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="案例策划：水位数据链。用48秒动画观察液位变送器、PLC模拟量采集、工程值换算与高低阈值控制水泵。">
+  <title>案例策划：水位数据链 · PLC 微动画</title>
+  <link rel="stylesheet" href="../../assets/fonts.css">
+  <link rel="stylesheet" href="../../assets/style.css">
+</head>
+<body>
+  <main class="lesson-shell">
+    <nav class="lesson-nav" aria-label="课程导航">
+      <a class="back" href="../../index.html"><span aria-hidden="true">←</span> 全部微动画</a>
+      <span class="meta">PLC 应用技术 / 微动画 18</span>
+    </nav>
+    <header class="lesson-intro">
+      <h1>案例策划：水位数据链</h1>
+      <p>跟随水位变化，观察变送器信号如何经过 PLC 换算，最终控制水泵启停。</p>
+    </header>
+    <section class="viewer" aria-label="水位数据链教学动画播放器">
+      <div id="stage" role="img" aria-label="48秒水位数据链教学动画，包含4至20毫安变送信号、模拟量原始值、工程值换算和高低水位阈值控制"></div>
+      <div class="playback">
+        <button id="toggle" type="button" aria-label="暂停动画">暂停</button>
+        <button id="restart" type="button">重播</button>
+        <div class="track" aria-hidden="true"><div id="progress"></div></div>
+        <span id="timer">00 / 48 s</span>
+        <span class="muted" id="play-status">无声 · 自动演示 · 48秒</span>
+        <button id="fullscreen" type="button">全屏</button>
+      </div>
+    </section>
+    <p class="mobile-note">横屏观看，水位变化和数据处理链更清晰。</p>
+    <section class="learning-summary">
+      <div>
+        <h2>记住这一点</h2>
+        <p class="takeaway">变送、采集和换算持续运行，三处读数随水位同步更新。</p>
+        <p>本例以 0—10 m 水位对应 4—20 mA 为教学量程。PLC 模拟量输入读取信号并形成原始值，程序按量程换算为米；电流、原始值和工程值在水位变化时同步更新。水位达到 8 m 停泵，降到 4 m 再启动，两个阈值之间保持原状态。</p>
+      </div>
+      <div class="reflection">
+        <h2>想一想</h2>
+        <p>为什么用 4 m 启动、8 m 停止两个阈值，而不是只用一个阈值？</p>
+      </div>
+    </section>
+    <section class="teaching-note">
+      <p><strong>动画说明</strong> 动画将 AI 原始值归一显示为 0—10000，仅用于说明“模拟量采集后还要换算”的关系。实际电流量程、原始值范围、缩放公式及接线方式取决于变送器、PLC 模块和项目组态。</p>
+    </section>
+    <footer class="lesson-foot">
+      <a href="../../index.html">← 返回动画目录</a>
+      <span>分步慢放 · 48 秒 · 含量程换算与高低阈值控制</span>
+    </footer>
+  </main>
+  <script defer src="../../assets/water-level-lesson.js"></script>
+</body>
+</html>

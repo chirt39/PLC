@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+  <rect width="1920" height="1080" fill="#f8f9f4"/>
+  <g font-family="Noto Sans SC, Microsoft YaHei, sans-serif">
+    <text x="96" y="70" font-size="25" fill="#657b80">PLC 应用技术</text>
+    <text x="1824" y="70" text-anchor="end" font-size="25" fill="#657b80">微动画 12 / 28 秒</text>
+    <text x="96" y="157" font-size="54" font-weight="700" fill="#183c45">常开/常闭触点与线圈逻辑</text>
+    <path d="M96 199H1824" stroke="#dfe7e2" stroke-width="2"/>
+    <rect x="100" y="260" width="300" height="535" rx="18" fill="#fff" stroke="#dfe7e2" stroke-width="2"/>
+    <text x="250" y="330" text-anchor="middle" font-size="34" fill="#183c45">按钮输入状态</text>
+    <text x="250" y="395" text-anchor="middle" font-size="25" fill="#dc6430">输入信号：1（有信号）</text>
+    <rect x="178" y="510" width="144" height="72" rx="18" fill="#dde7e0" stroke="#c2d3c9" stroke-width="2"/>
+    <ellipse cx="250" cy="510" rx="59" ry="19" fill="#a9bdb1"/>
+    <rect x="197" y="451" width="106" height="48" rx="11" fill="#dc6430"/>
+    <ellipse cx="250" cy="451" rx="53" ry="20" fill="#dc6430"/>
+    <text x="250" y="700" text-anchor="middle" font-size="26" fill="#657b80">按钮按下 · 有信号</text>
+    <path d="M410 520H465M453 511L465 520L453 529" fill="none" stroke="#dc6430" stroke-width="4"/>
+    <rect x="470" y="260" width="1350" height="535" rx="18" fill="#fff" stroke="#dfe7e2" stroke-width="2"/>
+    <text x="540" y="320" font-size="31" fill="#183c45">PLC 程序里的判断支路</text>
+    <path d="M565 365V720M565 470H700M804 470H1324M1425 470H1570M565 675H700M804 675H1324M1425 675H1570" stroke="#008579" stroke-width="5" fill="none"/>
+    <path d="M734 439V501M774 439V501" stroke="#008579" stroke-width="5"/><path d="M734 644V706M774 644V706M728 704L780 646" stroke="#527da0" stroke-width="5"/>
+    <text x="625" y="416" font-size="25" fill="#008579">常开：输入为1时接通</text><text x="625" y="621" font-size="25" fill="#527da0">常闭：输入为0时接通</text>
+    <text x="738" y="540" text-anchor="middle" font-size="21" fill="#657b80">判断输入=1</text><text x="738" y="745" text-anchor="middle" font-size="21" fill="#657b80">判断输入=0</text>
+    <text x="1385" y="485" text-anchor="middle" font-size="42" fill="#008579">( )</text><text x="1385" y="537" text-anchor="middle" font-size="24" fill="#657b80">输出线圈A</text>
+    <text x="1385" y="690" text-anchor="middle" font-size="42" fill="#527da0">( )</text><text x="1385" y="742" text-anchor="middle" font-size="24" fill="#657b80">输出线圈B</text>
+    <circle cx="1665" cy="470" r="46" fill="#e4f3ec" stroke="#008579" stroke-width="4"/><text x="1665" y="481" text-anchor="middle" font-size="23" font-weight="700" fill="#008579">得电</text>
+    <circle cx="1665" cy="675" r="46" fill="#edf1ed" stroke="#cbd5ce" stroke-width="4"/><text x="1665" y="686" text-anchor="middle" font-size="23" font-weight="700" fill="#657b80">失电</text>
+    <rect x="96" y="880" width="1728" height="110" rx="18" fill="#183c45"/>
+    <text x="960" y="949" text-anchor="middle" font-size="36" fill="#fff">输入为1：常开通、线圈A得电；常闭断、线圈B失电。</text>
+    <text x="96" y="1041" font-size="25" fill="#657b80">慢慢看两种输入状态，理解常开与常闭指令的相反判断条件。</text>
+  </g>
+</svg>

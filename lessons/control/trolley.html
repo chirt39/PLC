@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="案例策划：台车自动往返控制。通过36秒教学动画观察左右限位、正反转输出互锁与停止逻辑。">
+  <title>案例策划：台车自动往返控制 · PLC 微动画</title>
+  <link rel="stylesheet" href="../../assets/fonts.css">
+  <link rel="stylesheet" href="../../assets/style.css">
+</head>
+<body>
+  <main class="lesson-shell">
+    <nav class="lesson-nav" aria-label="课程导航">
+      <a class="back" href="../../index.html"><span aria-hidden="true">←</span> 全部微动画</a>
+      <span class="meta">PLC 应用技术 / 微动画 17</span>
+    </nav>
+    <header class="lesson-intro">
+      <h1>案例策划：台车自动往返控制</h1>
+      <p>观察启动、两端限位换向、自动循环和停止动作，理解 PLC 如何控制台车往返。</p>
+    </header>
+    <section class="viewer" aria-label="台车自动往返控制动画播放器">
+      <div id="stage" role="img" aria-label="36秒台车自动往返控制教学动画，包含两次往返和停止动作"></div>
+      <div class="playback">
+        <button id="toggle" type="button" aria-label="暂停动画">暂停</button>
+        <button id="restart" type="button">重播</button>
+        <div class="track" aria-hidden="true"><div id="progress"></div></div>
+        <span id="timer">00 / 36 s</span>
+        <span class="muted" id="play-status">无声 · 自动演示 · 36秒</span>
+        <button id="fullscreen" type="button">全屏</button>
+      </div>
+    </section>
+    <p class="mobile-note">横屏观看，台车行程和 PLC 状态更清晰。</p>
+    <section class="learning-summary">
+      <div>
+        <h2>记住这一点</h2>
+        <p class="takeaway">两端限位触发换向，正反转输出互锁。</p>
+        <p>启动后 RUN 保持，KM1 驱动台车向右；前限位 SQ1 动作后切换到 KM2，台车向左。回到原点限位 SQ2 后再次正转。按下停止，RUN 复位，两个方向输出都断开。</p>
+      </div>
+      <div class="reflection">
+        <h2>想一想</h2>
+        <p>为什么 KM1 正转和 KM2 反转不能同时接通？</p>
+      </div>
+    </section>
+    <section class="teaching-note">
+      <p><strong>动画说明</strong> 本动画分步演示两个往返行程，用短暂停留突出限位换向。输入输出地址为教学示例；实际接线、互锁方式和程序细节应按所用 PLC 与设备设计确认。</p>
+    </section>
+    <footer class="lesson-foot">
+      <a href="../../index.html">← 返回动画目录</a>
+      <span>分步慢放 · 36 秒 · 两次往返后停止</span>
+    </footer>
+  </main>
+  <script defer src="../../assets/trolley-lesson.js"></script>
+</body>
+</html>
